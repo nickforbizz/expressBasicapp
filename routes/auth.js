@@ -1,62 +1,52 @@
 const router = require('express').Router();
-const bcrypt = require('bcryptjs');
+
 const jwt = require('jsonwebtoken');
-const User = require('./../models/User');
-const {
-  registerValidation,
-  loginValidation,
-} = require('./../helpers/validations');
+
+const tokenList = {};
+
+const AuthController = require('../controllers/AuthController');
+
+
+
 
 // REGISTER
-router.post('/register', async (req, res) => {
-  // validate req data
-  let data = req.body;
-  const { error } = registerValidation(data);
-
-  if (error) return res.status(400).send(error.details[0].message);
-
-  // check if user in db
-  const emailExists = await User.findOne({ email: req.body.email });
-  if (emailExists)
-    return res.status(400).send(`Email: ${req.body.email} already exists`);
-
-  // Hash the Password
-  const salt = await bcrypt.genSalt(15);
-  const hashPassword = await bcrypt.hash(req.body.password, salt);
-
-  const user = new User({
-    name: req.body.name,
-    email: req.body.email,
-    password: hashPassword,
-  });
-
-  try {
-    const savedUser = await user.save();
-    res.send(savedUser);
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
+router.post('/register', AuthController.register);
 
 // LOGIN
-router.post('/login', async (req, res) => {
-  // validate req data
-  let data = req.body;
-  const { error } = loginValidation(data);
+router.post('/login',AuthController.login);
 
-  if (error) return res.status(400).send(error.details[0].message);
 
-  // check if user in db
-  const user = await User.findOne({ email: req.body.email });
-  if (!user) return res.status(400).send(`Email: ${req.body.email} not found`);
+router.post('/logout',AuthController.logout);
 
-  // check password
-  const validPass = await bcrypt.compare(req.body.password, user.password);
-  if (!validPass) return res.status(400).send('Invalid Password');
+const tokenRefresh = (req, res, next) => {
+  const postData = req.body;
+  if (postData.refreshToken && postData.refreshToken in tokenList) {
+    const decoded_user = jwt.verify(
+      postData.refreshToken,
+      process.env.SECRET_REFRESH_TOKEN
+    );
 
-//   Create and Assign Token
-const token = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET);
-res.header('auth_token', token).send(token);
-});
+    const token = generateAccessToken(decoded_user._id, decoded_user.email);
+    const refreshToken = generateRefreshToken(
+      decoded_user._id,
+      decoded_user.email
+    );
+    req.content = {
+      user: decoded.user,
+      email: decoded.email,
+      level: decoded.level,
+    };
+    req.token = token;
+    req.refreshToken = refreshToken;
+    tokenList[refreshToken] = auth;
+  } else {
+    return res.status(401).send(tokenList);
+  }
+  next();
+};
+
+// Reflesh Token
+router.get('/refresh', AuthController.refresh);
+
 
 module.exports = router;

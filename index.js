@@ -2,12 +2,20 @@ const express  = require('express');
 const app = express();
 const dotenv = require('dotenv')
 const mongoose = require('mongoose');
+var cors = require('cors');
+const cookieParser = require('cookie-parser')
+const logger = require('./services/logger');
+const corsOptions = require('./helpers/corsOptions')
+dotenv.config();
+
+
+app.use(cors()); 
 
 // Import Routes
 const authRoutes = require('./routes/auth')
 const postsRoutes = require('./routes/posts')
+require("./routes/users")(app)
 
-dotenv.config();
 
 // Connect to DB
 mongoose.connect(process.env.DB_CONNECT, () => console.log('connected to db'))
@@ -15,6 +23,8 @@ mongoose.connect(process.env.DB_CONNECT, () => console.log('connected to db'))
 
 // Middleware
 app.use(express.json())
+app.use(cookieParser())
+app.use(cors(corsOptions))
 
 // Route Middleware
 app.use('/api/user', authRoutes);

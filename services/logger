@@ -1,0 +1,29 @@
+const { format, createLogger, transports } = require("winston");
+const { combine, label, json } = format;
+require("winston-daily-rotate-file");
+
+//Label
+const CATEGORY = "Log Rotation";
+
+//DailyRotateFile func()
+const fileRotateTransport = new transports.DailyRotateFile({
+  filename: "logs/rotate-%DATE%.log",
+  datePattern: "YYYY-MM-DD",
+  maxFiles: "14d",
+});
+
+const consoleTransport = new transports.Console({
+  level: process.env.LOG_LEVEL,
+  handleExceptions: true,
+  json: true, 
+  colorize: true,
+  format: format.printf((i) => `${i.message}`),
+});
+
+const logger = createLogger({
+  level: "debug",
+  format: combine(label({ label: CATEGORY }), json()),
+  transports: [fileRotateTransport, consoleTransport],
+});
+
+module.exports = logger;
