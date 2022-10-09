@@ -1,0 +1,9 @@
+DB_CONNECT = 
+
+SECRET_TOKEN = secret_token_here
+SECRET_REFRESH_TOKEN=secret_token_here
+
+SECRET_TOKEN_expiresIn=5m
+SECRET_REFRESH_TOKEN_expiresIn=
+
+NODE_ENV=development

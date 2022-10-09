@@ -8,8 +8,7 @@ const logger = require('./services/logger');
 const corsOptions = require('./helpers/corsOptions')
 dotenv.config();
 
-
-app.use(cors()); 
+app.use(cors(corsOptions))
 
 // Import Routes
 const authRoutes = require('./routes/auth')
@@ -24,7 +23,7 @@ mongoose.connect(process.env.DB_CONNECT, () => console.log('connected to db'))
 // Middleware
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors(corsOptions))
+
 
 // Route Middleware
 app.use('/api/user', authRoutes);

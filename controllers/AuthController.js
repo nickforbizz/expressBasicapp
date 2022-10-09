@@ -50,8 +50,8 @@ const login = async (req, res) => {
   };
 //   tokenList[refreshToken] = auth;
 //   tokenList[token] = auth;
-//   res.header('auth_token', token).send(auth);
-res.json({token})
+  res.header('auth_token', token).send(auth);
+// res.json({token})
 };
 
 const logout = async (req, res) => {
@@ -59,7 +59,7 @@ const logout = async (req, res) => {
 
     if(!cookies?.jwt) return res.sendStatus(204);
     res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
-    res.json({ msg: "Cookie Cleared" });
+    res.json({ code: 1, msg: "Cookie Cleared" });
 };
 
 /**
@@ -101,7 +101,7 @@ const register = async (req, res) => {
 
 const refresh = async (req, res) => {
   const cookies = req.cookies;
-
+ 
   if(!cookies?.jwt) return res.status(401).json({msg: 'Unauthorised Request. NoC'});
 
   const refreshToken = cookies.jwt;
@@ -117,9 +117,10 @@ const refresh = async (req, res) => {
 
         const user = await User.findOne({email:decoded.email});
         if(!user) return res.status(401).json({msg: 'Unauthorised Request.'});
-
-        const auth_token = generateRefreshToken(user.id, user.email);
-        res.json({auth_token});
+        const token = generateAccessToken(user.id, user.email);
+        let auth = { user, token };
+        console.log(auth); 
+        res.header('auth_token', token).send(auth);
     }
   );
  
