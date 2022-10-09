@@ -4,7 +4,6 @@ const dotenv = require('dotenv')
 const mongoose = require('mongoose');
 var cors = require('cors');
 const cookieParser = require('cookie-parser')
-const logger = require('./services/logger');
 const corsOptions = require('./helpers/corsOptions')
 dotenv.config();
 
