@@ -1,9 +1,5 @@
 const router = require('express').Router();
-
 const jwt = require('jsonwebtoken');
-
-const tokenList = {};
-
 const AuthController = require('../controllers/AuthController');
 
 
@@ -47,6 +43,9 @@ const tokenRefresh = (req, res, next) => {
 
 // Reflesh Token
 router.get('/refresh', AuthController.refresh);
+
+
+
 
 
 module.exports = router;

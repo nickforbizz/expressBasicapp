@@ -11,8 +11,8 @@ app.use(cors(corsOptions))
 
 // Import Routes
 const authRoutes = require('./routes/auth')
+const userRoutes = require('./routes/users')
 const postsRoutes = require('./routes/posts')
-require("./routes/users")(app)
 
 
 // Connect to DB
@@ -25,7 +25,8 @@ app.use(cookieParser())
 
 
 // Route Middleware
-app.use('/api/user', authRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/posts', postsRoutes);
 
 app.listen(5000, () => console.log("server running"))
