@@ -33,7 +33,6 @@ const login = async (req, res) => {
   const refreshToken = generateRefreshToken(user._id, user.email);
   req.token = token;
   req.refreshToken = refreshToken;
-  //const token = jwt.sign({_id: user._id}, process.env.SECRET_TOKEN);
 
   // Create secure cookie with refresh token
   res.cookie('jwt', refreshToken, {
@@ -48,10 +47,7 @@ const login = async (req, res) => {
     token,
     refreshToken,
   };
-//   tokenList[refreshToken] = auth;
-//   tokenList[token] = auth;
   res.header('auth_token', token).send(auth);
-// res.json({token})
 };
 
 const logout = async (req, res) => {
@@ -119,7 +115,6 @@ const refresh = async (req, res) => {
         if(!user) return res.status(401).json({msg: 'Unauthorised Request.'});
         const token = generateAccessToken(user.id, user.email);
         let auth = { user, token };
-        console.log(auth); 
         res.header('auth_token', token).send(auth);
     }
   );

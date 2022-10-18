@@ -3,9 +3,12 @@ const userController = require('../controllers/UserController');
 const routesMiddleware = require('./verifyTokenMiddleware');
 
 
-module.exports = (app) => {
 
-    router.get('/', routesMiddleware, userController.getUsers);
-    app.use('/api/user', router);
-}
+router.get('/', routesMiddleware, userController.getUsers);
+router.post('/update', routesMiddleware, userController.updateUsers);
+router.post('/create', routesMiddleware, userController.createUsers);
+router.post('/delete/:id', routesMiddleware, userController.deleteUsers);
 
+
+
+module.exports = router;
