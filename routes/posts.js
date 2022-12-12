@@ -1,17 +1,34 @@
 const router = require('express').Router();
-const routesMiddleware = require('./verifyTokenMiddleware')
+const fileUpload = require('express-fileupload');
+
+const postController = require('../controllers/PostController.js');
+const fileExtLimiter = require('../middleware/fileExtLimiter.js');
+const fileSizeLimiter = require('../middleware/fileSizeLimiter.js');
+
+// Middlewares
+const routesMiddleware = require('../middleware/verifyTokenMiddleware')
 
 
+router.get('/', 
+        routesMiddleware, 
+        postController.getPosts);
 
-router.get('/', routesMiddleware, async (req, res) => {
-    res.json({
-        posts:{
-            user: req.user,
-            title: "1st post",
-            description: "A post not to be accessed without auth token",
-        }
-    })
-});
+
+router.post('/', 
+        routesMiddleware, 
+        fileUpload({
+            createParentPath: true
+        }),
+        fileSizeLimiter,
+        fileExtLimiter(['.png', '.jpg', '.jpeg']),
+        postController.createPost);
+
+
+router.post('/delete/:id', 
+        routesMiddleware, 
+        postController.deletePost);
+
+
 
 
 
