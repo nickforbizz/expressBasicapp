@@ -9,8 +9,8 @@ const Post = require('../models/Post');
  * @param {*} res
  */
 const getPosts = async (req, res) => {
-  let posts = await Post.find();
-  res.send(posts);
+  let records = await Post.find();
+  res.send(records);
 };
 
 /**
@@ -19,8 +19,8 @@ const getPosts = async (req, res) => {
  * @param {*} res
  */
 const getAllPosts = async (req, res) => {
-  let posts = await Post.find();
-  res.send(posts);
+  let records = await Post.find({active: 1});
+  res.send(records);
 };
 
 /**
@@ -86,8 +86,8 @@ const createPost = async (req, res) => {
  * @param {*} res
  */
 const updatePost = async (req, res) => {
-  let posts = await Post.find();
-  res.send(posts);
+  let records = await Post.find();
+  res.send(records);
 };
 
 /**
@@ -104,8 +104,13 @@ const deletePost = async (req, res) => {
   res.send(del_record);
 };
 
+
+
+
+
 module.exports = {
   getPosts,
+  getAllPosts,
   updatePost,
   createPost,
   deletePost,
