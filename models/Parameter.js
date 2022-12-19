@@ -1,28 +1,33 @@
 const mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
-const postSchema = new mongoose.Schema({
-    title:{
+const parameterSchema = new mongoose.Schema({
+    business_name:{
         type: String,
         required: true,
         min: 5
     },
-    description:{
+    business_id:{
         type: String,
-        min: 5,
-        max: 255,
+        required: true,
     },
-    category:{
+    business_bio:{
         type: String,
-        min: 6,
-        max: 1024
+        required: true,
     },
-    image: {
+    business_address:{
         type: String,
+        required: true,
     },
-    
-    image_url: {
+    business_location:{
         type: String,
+        required: true,
+    },
+    notify_login:{
+        type: Boolean,
+    },
+    uses_2fa:{
+        type: Boolean,
     },
     created_by: {
         type: Schema.Types.ObjectId,
@@ -36,4 +41,4 @@ const postSchema = new mongoose.Schema({
 });
 
 
-module.exports = mongoose.model('Post', postSchema);
+module.exports = mongoose.model('Parameter', parameterSchema);
