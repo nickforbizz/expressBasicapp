@@ -1,7 +1,12 @@
 const mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
-const postSchema = new mongoose.Schema({
+const vehicleModelSchema = new mongoose.Schema({
+    fk_veh_make: {
+        type: Schema.Types.ObjectId,
+        ref: 'VehicleMake',
+        required: true
+    },
     title:{
         type: String,
         required: true,
@@ -12,17 +17,9 @@ const postSchema = new mongoose.Schema({
         min: 5,
         max: 255,
     },
-    category:{
+    yom:{
         type: String,
-        min: 6,
-        max: 1024
-    },
-    image: {
-        type: String,
-    },
-    
-    image_url: {
-        type: String,
+        min: 2
     },
     created_by: {
         type: Schema.Types.ObjectId,
@@ -36,4 +33,4 @@ const postSchema = new mongoose.Schema({
 });
 
 
-module.exports = mongoose.model('Post', postSchema);
+module.exports = mongoose.model('VehicleModel', vehicleModelSchema);

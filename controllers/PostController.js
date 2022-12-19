@@ -9,7 +9,7 @@ const Post = require('../models/Post');
  * @param {*} res
  */
 const getPosts = async (req, res) => {
-  let records = await Post.find();
+  let records = await Post.find().populate('created_by');
   res.send(records);
 };
 
@@ -40,6 +40,7 @@ const createPost = async (req, res) => {
     });
 
   let fileNames = '';
+  let filePaths = '';
   Object.keys(files).forEach((key) => {
     let ext = '.' + files[key].mimetype.split('/')[1];
     let md5 = files[key].md5;
@@ -52,12 +53,15 @@ const createPost = async (req, res) => {
             status: "error",
             message: err
         })
-    })
+    });
+
     fileNames += filename + ' ';
+    filePaths += filepath + ' ';
   });
 
   data = {
     image: fileNames.trim(),
+    image_url: filePaths.trim(),
     ...data,
   };
 

@@ -10,6 +10,10 @@ router.get('/',
         routesMiddleware, 
         parameterController.getParameters);
 
+        
+router.get('/all', 
+        routesMiddleware, 
+        parameterController.getAllParameters);
 
 router.post('/', 
         routesMiddleware,
