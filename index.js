@@ -7,43 +7,6 @@ const cookieParser = require('cookie-parser')
 const corsOptions = require('./helpers/corsOptions')
 dotenv.config();
 
-// Connect to DB
-const connectDatabase = async () => {
-    try {
-    
-    await mongoose.connect(
-        process.env.DB_CONNECT, 
-        { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false },
-        () => console.log('connected to database successfully')
-        );
-
-        console.log("users");
-        let users = await User.find();
-//   res.send(users);
-
-    console.log(users);
-    console.log("users...");   
-    } catch (error) {
-    console.log(error);
-    process.exit(1);
-    }
-};
-
-// connectDatabase(); 
-mongoose.connect(
-    process.env.DB_CONNECT, 
-    { useNewUrlParser: true, 
-        useUnifiedTopology: true 
-    },
-    () => console.log('connected to db')
-);
-
-
-
-app.use(cors(corsOptions))
-
-
-
 // Import Routes
 const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/users')
@@ -53,9 +16,35 @@ const User = require('./models/User');
 
 
 
+
+
+// Connect to DB
+const db = require("./models");
+db.sequelize.sync({ force: true })
+  .then(() => {
+    console.log("Synced db.");
+  })
+  .catch((err) => {
+    console.log("Failed to sync db: " + err.message);
+  });
+
+
+
+
+
+app.use(cors(corsOptions))
+
 // Middleware
 app.use(express.json()) 
 app.use(cookieParser())
+// parse requests of content-type - application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true }));
+
+
+
+
+
+
 
 
 // Route Middleware
