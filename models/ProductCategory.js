@@ -1,27 +1,32 @@
-const mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
-
-const productCategorySchema = new mongoose.Schema({
-    title:{
-        type: String,
+module.exports = (sequelize, Sequelize) => {
+  const ProductCategory = sequelize.define(
+    'product_categories',
+    {
+      title: {
+        type: Sequelize.STRING,
         required: true,
-        min: 5
-    },
-    description:{
-        type: String,
+        min: 5,
+      },
+      description: {
+        type: Sequelize.STRING,
         min: 5,
         max: 255,
+      },
+      created_by: {
+        // Set FK relationship (hasMany) with `User`
+        type: Sequelize.INTEGER,
+        required: true,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
     },
-    created_by: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    created_at: {
-        type: Date,
-        default: Date.now
+    {
+      timestamps: true,
+      underscored: true,
     }
-});
+  );
 
-
-module.exports = mongoose.model('ProductCategory', productCategorySchema);
+  return ProductCategory;
+};

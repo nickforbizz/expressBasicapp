@@ -1,36 +1,44 @@
-const mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
-
-const vehicleModelSchema = new mongoose.Schema({
+module.exports = (sequelize, Sequelize) => {
+    const VehicleModel = sequelize.define(
+      'vehicle_models',
+      {
     fk_veh_make: {
-        type: Schema.Types.ObjectId,
-        ref: 'VehicleMake',
+        type: Sequelize.INTEGER,
+        references: {
+            model: 'vehicle_makes',
+            key: 'id'
+        },
         required: true
     },
     title:{
-        type: String,
+        type: Sequelize.STRING,
         required: true,
         min: 5
     },
     description:{
-        type: String,
+        type: Sequelize.STRING,
         min: 5,
         max: 255,
     },
     yom:{
-        type: String,
+        type: Sequelize.STRING,
         min: 2
     },
     created_by: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        // Set FK relationship (hasMany) with `User`
+        type: Sequelize.INTEGER,
+        required: true,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
     },
-    created_at: {
-        type: Date,
-        default: Date.now
+    {
+      timestamps: true,
+      underscored: true,
     }
-});
+  );
 
-
-module.exports = mongoose.model('VehicleModel', vehicleModelSchema);
+  return VehicleModel;
+};

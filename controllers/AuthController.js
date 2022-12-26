@@ -85,6 +85,7 @@ const register = async (req, res) => {
   const salt = await bcrypt.genSalt(15);
   const hashPassword = await bcrypt.hash(req.body.password, salt);
 
+  console.log(file); 
   // Store Image
   let ext = '.' + file.mimetype.split('/')[1];
   let md5 = file.md5;

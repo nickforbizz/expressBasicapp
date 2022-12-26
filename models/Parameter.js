@@ -1,44 +1,49 @@
-const mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
-
-const parameterSchema = new mongoose.Schema({
-    business_name:{
-        type: String,
+module.exports = (sequelize, Sequelize) => {
+  const Parameter = sequelize.define(
+    'parameters',
+    {
+      businessName: {
+        type: Sequelize.STRING,
         required: true,
-        min: 5
-    },
-    business_id:{
-        type: String,
+        min: 5,
+      },
+      businessId: {
+        type: Sequelize.STRING,
         required: true,
-    },
-    business_bio:{
-        type: String,
+      },
+      businessBio: {
+        type: Sequelize.STRING,
         required: true,
-    },
-    business_address:{
-        type: String,
+      },
+      businessAddress: {
+        type: Sequelize.STRING,
         required: true,
-    },
-    business_location:{
-        type: String,
+      },
+      businessLocation: {
+        type: Sequelize.STRING,
         required: true,
+      },
+      notifyLogin: {
+        type: Sequelize.BOOLEAN,
+      },
+      uses_2fa: {
+        type: Sequelize.BOOLEAN,
+      },
+      created_by: {
+        // Set FK relationship (hasMany) with `User`
+        type: Sequelize.INTEGER,
+        required: true,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
     },
-    notify_login:{
-        type: Boolean,
-    },
-    uses_2fa:{
-        type: Boolean,
-    },
-    created_by: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    created_at: {
-        type: Date,
-        default: Date.now
+    {
+      timestamps: true,
+      underscored: true,
     }
-});
+  );
 
-
-module.exports = mongoose.model('Parameter', parameterSchema);
+  return Parameter;
+};

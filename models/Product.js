@@ -1,77 +1,92 @@
-const mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
-
-const productSchema = new mongoose.Schema({
-    fk_product_cat: {
-        type: Schema.Types.ObjectId,
-        ref: 'ProductCategory',
-        required: true
-    },
-    fk_veh_make: {
-        type: Schema.Types.ObjectId,
-        ref: 'VehicleMake',
-        required: true
-    },
-    fk_veh_model: {
-        type: Schema.Types.ObjectId,
-        ref: 'VehicleModel',
-        required: true
-    },
-    title:{
-        type: String,
+module.exports = (sequelize, Sequelize) => {
+  const Product = sequelize.define(
+    'products',
+    {
+      fk_product_cat: {
+        type: Sequelize.INTEGER,
         required: true,
-        min: 5
-    },
-    description:{
-        type: String,
+        references: {
+            model: 'product_categories',
+            key: 'id'
+        },
+      },
+      fk_veh_make: {
+        type: Sequelize.INTEGER,
+        required: true,
+        references: {
+            model: 'vehicle_makes',
+            key: 'id'
+        },
+      },
+      fk_veh_model: {
+        // Set FK relationship (hasMany) with `VehicleModel`
+        type: Sequelize.INTEGER,
+        required: true,
+        references: {
+          model: 'vehicle_models',
+          key: 'id',
+        },
+      },
+      title: {
+        type: Sequelize.STRING,
+        required: true,
+        min: 5,
+      },
+      description: {
+        type: Sequelize.STRING,
         min: 5,
         max: 255,
+      },
+      quantity: {
+        type: Sequelize.INTEGER,
+      },
+      size: {
+        type: Sequelize.STRING,
+        min: 2,
+      },
+      color: {
+        type: Sequelize.STRING,
+        min: 2,
+      },
+      discount: {
+        type: Sequelize.BOOLEAN,
+        dafault: false,
+      },
+      discount_amt: {
+        type: Sequelize.INTEGER,
+        min: 1,
+      },
+      is_sold: {
+        type: Sequelize.BOOLEAN,
+        default: false,
+      },
+      price: {
+        type: Sequelize.INTEGER,
+        min: 2,
+      },
+      condition: {
+        type: Sequelize.STRING,
+        min: 2,
+      },
+      body_type: {
+        type: Sequelize.STRING,
+        min: 2,
+      },
+      created_by: {
+        // Set FK relationship (hasMany) with `User`
+        type: Sequelize.INTEGER,
+        required: true,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
     },
-    quantity:{
-        type: Number,
-    },
-    size:{
-        type: String,
-        min: 2
-    },
-    color:{
-        type: String,
-        min: 2
-    },
-    discount:{
-        type: Boolean,
-        dafault: false
-    },
-    discount_amt:{
-        type: Number,
-        min: 1
-    },
-    is_sold:{
-        type: Boolean,
-        default: false
-    },
-    price:{
-        type: Number,
-        min: 2
-    },
-    condition:{
-        type: String,
-        min: 2
-    },
-    body_type:{
-        type: String,
-        min: 2
-    },
-    created_by: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    created_at: {
-        type: Date,
-        default: Date.now
+    {
+      timestamps: true,
+      underscored: true,
     }
-});
+  );
 
-
-module.exports = mongoose.model('Product', productSchema);
+  return Product;
+};

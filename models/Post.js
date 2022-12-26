@@ -1,39 +1,44 @@
-const mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
-
-const postSchema = new mongoose.Schema({
-    title:{
-        type: String,
+module.exports = (sequelize, Sequelize) => {
+  const Post = sequelize.define(
+    'posts',
+    {
+      title: {
+        type: Sequelize.STRING,
         required: true,
-        min: 5
-    },
-    description:{
-        type: String,
+        min: 5,
+      },
+      description: {
+        type: Sequelize.STRING,
         min: 5,
         max: 255,
-    },
-    category:{
-        type: String,
+      },
+      category: {
+        type: Sequelize.STRING,
         min: 6,
-        max: 1024
+        max: 1024,
+      },
+      image: {
+        type: Sequelize.STRING,
+      },
+
+      image_url: {
+        type: Sequelize.STRING,
+      },
+      created_by: {
+        // Set FK relationship (hasMany) with `User`
+        type: Sequelize.INTEGER,
+        required: true,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
     },
-    image: {
-        type: String,
-    },
-    
-    image_url: {
-        type: String,
-    },
-    created_by: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    created_at: {
-        type: Date,
-        default: Date.now
+    {
+      timestamps: true,
+      underscored: true,
     }
-});
+  );
 
-
-module.exports = mongoose.model('Post', postSchema);
+  return Post;
+};
