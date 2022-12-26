@@ -1,12 +1,25 @@
 const router = require('express').Router();
+const fileUpload = require('express-fileupload');
 const jwt = require('jsonwebtoken');
+
+
 const AuthController = require('../controllers/AuthController');
+
+
+// Middlewares
+const fileExtLimiter = require('../middleware/fileExtLimiter');
+const fileSizeLimiter = require('../middleware/fileSizeLimiter');
 
 
 
 
 // REGISTER
-router.post('/register', AuthController.register);
+router.post('/register', fileUpload({
+  createParentPath: true
+}),
+fileSizeLimiter,
+fileExtLimiter(['.png', '.jpg', '.jpeg']),
+AuthController.register);
 
 // LOGIN
 router.post('/login',AuthController.login);

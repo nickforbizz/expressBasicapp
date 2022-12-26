@@ -6,7 +6,6 @@ const routesMiddleware = require('../middleware/verifyTokenMiddleware');
 
 router.get('/', routesMiddleware, userController.getUsers);
 router.post('/update', routesMiddleware, userController.updateUsers);
-router.post('/create', routesMiddleware, userController.createUsers);
 router.post('/delete/:id', routesMiddleware, userController.deleteUsers);
 
 
