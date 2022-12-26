@@ -1,3 +1,4 @@
+const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const logger = require('../services/logger');
@@ -65,9 +66,13 @@ const logout = async (req, res) => {
  * @returns
  */
 const register = async (req, res) => {
+  const file = req.files;
+  const projectRootPath = path.resolve('./');
   // validate req data
   let data = req.body;
-  const { error } = registerValidation(data);
+  // console.log(file);
+  
+  const { error } = registerValidation(data); 
 
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -79,6 +84,29 @@ const register = async (req, res) => {
   // Hash the Password
   const salt = await bcrypt.genSalt(15);
   const hashPassword = await bcrypt.hash(req.body.password, salt);
+
+  // Store Image
+  let ext = '.' + file.mimetype.split('/')[1];
+  let md5 = file.md5;
+  let filename = md5 + ext;
+
+  // store the file
+  const filepath = path.join(projectRootPath, 'uploads', filename);
+  file.mv(filepath, err=>{
+      if(err) return res.status(500).json({
+          status: "error",
+          message: err
+      })
+  });
+
+  data = {
+    image: fileName.trim(),
+    image_url: filepath.trim(),
+    ...data,
+  };
+
+  console.log(file);
+  return res.json(file, data)
 
   const user = new User({
     name: req.body.name,

@@ -1,3 +1,4 @@
+const path = require('path');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
@@ -7,6 +8,8 @@ const getUsers = async (req, res) => {
 };
 
 const updateUsers = async (req, res) => {
+  const files = req.files;
+  const projectRootPath = path.resolve('./');
   let data = req.body;
   let user_id = data?._id;
   if (!user_id) return res.status(400).send(`User with could not found`);
@@ -22,32 +25,10 @@ const updateUsers = async (req, res) => {
   res.send(patched_user);
 };
 
-const createUsers = async (req, res) => {
-  let data = req.body;
-  let user_email = data?.email;
 
-  // check if user in db
-  const user = await User.findOne({ email: user_email });
-  if (user)
-    return res.status(400).send(`User with Email: ${user_email} already exist`);
 
-  // Hash the Password
-  const salt = await bcrypt.genSalt(15);
-  const hashPassword = await bcrypt.hash('12345', salt);
-  let new_user = await new User({
-    name: data.name,
-    email: data.email,
-    password: hashPassword,
-  });
 
-  try {
-    const savedUser = await new_user.save();
-    res.send(savedUser);
-  } catch (error) {
-    logger.error(error);
-    res.status(400).send(error);
-  }
-};
+
 
 
 const deleteUsers = async (req, res) => {
@@ -62,6 +43,5 @@ const deleteUsers = async (req, res) => {
 module.exports = {
   getUsers,
   updateUsers,
-  createUsers,
   deleteUsers
 };

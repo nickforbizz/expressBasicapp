@@ -29,7 +29,7 @@ const getAllPosts = async (req, res) => {
  * @param {*} res
  */
 const createPost = async (req, res) => {
-  const files = req.files;
+  const files = req.files; 
   const projectRootPath = path.resolve('./');
   let data = req.body;
   const { error } = postValidation(data);
