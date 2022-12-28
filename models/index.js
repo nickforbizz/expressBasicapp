@@ -19,13 +19,13 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.Post = require('./User')(sequelize, Sequelize)
-db.Post = require('./Parameter')(sequelize, Sequelize)
-db.Post = require('./ProductCategory')(sequelize, Sequelize)
-db.Post = require('./VehicleMake')(sequelize, Sequelize)
-db.Post = require('./VehicleModel')(sequelize, Sequelize)
-db.Post = require('./Product')(sequelize, Sequelize)
-db.Post = require('./SoldProduct')(sequelize, Sequelize)
+db.User = require('./User')(sequelize, Sequelize)
+db.Parameter = require('./Parameter')(sequelize, Sequelize)
+db.ProductCategory = require('./ProductCategory')(sequelize, Sequelize)
+db.VehicleMake = require('./VehicleMake')(sequelize, Sequelize)
+db.VehicleModel = require('./VehicleModel')(sequelize, Sequelize)
+db.Product = require('./Product')(sequelize, Sequelize)
+db.SoldProduct = require('./SoldProduct')(sequelize, Sequelize)
 db.Post = require('./Post')(sequelize, Sequelize)
 
 module.exports = db;

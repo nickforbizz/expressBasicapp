@@ -20,7 +20,7 @@ const User = require('./models/User');
 
 // Connect to DB
 const db = require("./models");
-db.sequelize.sync({ force: true })
+db.sequelize.sync({ force: false })
   .then(() => {
     console.log("Synced db.");
   })
