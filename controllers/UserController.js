@@ -1,9 +1,10 @@
 const path = require('path');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
+const Models = require('../models');
+const User = Models.User;
 
 const getUsers = async (req, res) => {
-  let users = await User.find();
+  let users = await User.findAll();
   res.send(users);
 };
 

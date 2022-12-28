@@ -6,7 +6,8 @@ const {
   loginValidation,
   registerValidation,
 } = require('../helpers/validations');
-const User = require('../models/User');
+const Models = require('../models');
+const User = Models.User;
 
 /**
  *
@@ -67,6 +68,7 @@ const logout = async (req, res) => {
  */
 const register = async (req, res) => {
   const file = req.files;
+  const avator = file['avator'];
   const projectRootPath = path.resolve('./');
   // validate req data
   let data = req.body;
@@ -77,7 +79,7 @@ const register = async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   // check if user in db
-  const emailExists = await User.findOne({ email: req.body.email });
+  const emailExists = await User.findOne({ where: { email: req.body.email }});
   if (emailExists)
     return res.status(400).send(`Email: ${req.body.email} already exists`);
 
@@ -85,15 +87,14 @@ const register = async (req, res) => {
   const salt = await bcrypt.genSalt(15);
   const hashPassword = await bcrypt.hash(req.body.password, salt);
 
-  console.log(file); 
   // Store Image
-  let ext = '.' + file.mimetype.split('/')[1];
-  let md5 = file.md5;
+  let ext = '.' + avator.mimetype.split('/')[1];
+  let md5 = avator.md5;
   let filename = md5 + ext;
 
   // store the file
-  const filepath = path.join(projectRootPath, 'uploads', filename);
-  file.mv(filepath, err=>{
+  const filepath = path.join(projectRootPath, 'uploads/user', filename);
+  avator.mv(filepath, err=>{
       if(err) return res.status(500).json({
           status: "error",
           message: err
@@ -101,18 +102,18 @@ const register = async (req, res) => {
   });
 
   data = {
-    image: fileName.trim(),
+    image: filename.trim(),
     image_url: filepath.trim(),
     ...data,
   };
 
-  console.log(file);
-  return res.json(file, data)
 
   const user = new User({
-    name: req.body.name,
-    email: req.body.email,
+    name: data.name,
+    email: data.email,
     password: hashPassword,
+    image: data.image,
+    imageUrl: data.image_url
   });
 
   try {
