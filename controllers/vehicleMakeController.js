@@ -12,7 +12,7 @@ const VehicleMake = require('../models/VehicleMake');
  * @param {*} res
  */
 const getMakes = async (req, res) => {
-  let records = await VehicleMake.find();
+  let records = await VehicleMake.findAll({where: {active: 1}});
   res.send(records);
 };
 
@@ -26,7 +26,7 @@ const getMakes = async (req, res) => {
  * @param {*} res
  */
 const getAllMakes = async (req, res) => {
-  let records = await VehicleMake.find({active: 1});
+  let records = await VehicleMake.findAll();
   res.send(records);
 };
 
@@ -47,15 +47,22 @@ const createMake = async (req, res) => {
         message: error.details[0].message,
         });
 
-    let new_record = await new VehicleMake(data);
+        try {
+        let new_record = await create(data);
 
-    try {
-        const savedRecord = await new_record.save();
-        return res.json({
-            status: 'success',
-            message: 'record saved successfuly',
-            data: savedRecord
-        });
+        if (new_record) {
+            return res.json({
+                status: 'success',
+                message: 'record saved successfuly',
+                data: savedRecord
+            });
+            
+        } else {
+            return res.json({
+                status: 'error',
+                message: 'error saving record',
+            });
+        }
     } catch (error) {
         Logger.error(error);
         return res.status(400).json({
@@ -74,8 +81,18 @@ const createMake = async (req, res) => {
  * @param {*} res
  */
 const updateMake = async (req, res) => {
-    let records = await VehicleMake.find();
-    res.send(records);
+    let data = req.body;
+    let id = data?.id;
+    if (!id) return res.status(400).send(`Record ID is required`);
+    
+    // check if user in db
+    let record = await VehicleMake.findByPk(id);
+    if (!record) return res.status(400).send(`Record with Id: ${id} not found`);
+
+    let patched_record = await User.update( data, {
+        where: { id: user_id }
+      });
+    res.send(patched_record);
 };
 
 
@@ -87,11 +104,12 @@ const updateMake = async (req, res) => {
  * @param {*} res
  */
 const deleteMake = async (req, res) => {
-    let data = req.body;
     let id = req.params.id;
   
     // Delete the document by its _id
-    let del_record = await VehicleMake.deleteOne({ _id: id });
+    let del_record = await VehicleMake.destroy({
+        where: { id: id }
+      });
     res.send(del_record);
   };
 
