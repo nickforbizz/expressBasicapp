@@ -7,7 +7,7 @@ const {
   registerValidation,
 } = require('../helpers/validations');
 const Models = require('../models');
-const User = Models.User;
+const User = Models.User; 
 
 /**
  *
@@ -70,6 +70,8 @@ const register = async (req, res) => {
   const file = req.files;
   const avator = file['avator'];
   const projectRootPath = path.resolve('./');
+
+  
   // validate req data
   let data = req.body;
   // console.log(file);
