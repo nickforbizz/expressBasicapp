@@ -24,7 +24,11 @@ module.exports = (sequelize, Sequelize) => {
       image_url: {
         type: Sequelize.STRING,
       },
-      created_by: {
+      active: {
+        type: Sequelize.INTEGER,
+        default: 0
+      },
+      user_id: {
         // Set FK relationship (hasMany) with `User`
         type: Sequelize.INTEGER,
         required: true,
@@ -39,6 +43,8 @@ module.exports = (sequelize, Sequelize) => {
       underscored: true,
     }
   );
+
+  
 
   return Post;
 };

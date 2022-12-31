@@ -21,6 +21,11 @@ router.post('/',
         vehicleMakeController.createMake);
 
 
+router.post('/update/:id', 
+        routesMiddleware,
+        vehicleMakeController.updateMake);
+
+
 router.post('/delete/:id', 
         routesMiddleware, 
         vehicleMakeController.deleteMake);

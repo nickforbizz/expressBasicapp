@@ -68,7 +68,6 @@ const logout = async (req, res) => {
  */
 const register = async (req, res) => {
   const file = req.files;
-  const avator = file['avator'];
   const projectRootPath = path.resolve('./');
 
   
@@ -90,24 +89,30 @@ const register = async (req, res) => {
   const hashPassword = await bcrypt.hash(req.body.password, salt);
 
   // Store Image
-  let ext = '.' + avator.mimetype.split('/')[1];
-  let md5 = avator.md5;
-  let filename = md5 + ext;
+  let image = '';
+  let image_url = '';
+  if(file){
+    const avator = file['avator'];
+    let ext = '.' + avator.mimetype.split('/')[1];
+    let md5 = avator.md5;
+    let filename = md5 + ext;
 
-  // store the file
-  const filepath = path.join(projectRootPath, 'uploads/user', filename);
-  avator.mv(filepath, err=>{
-      if(err) return res.status(500).json({
-          status: "error",
-          message: err
-      })
-  });
+    // store the file
+    const filepath = path.join(projectRootPath, 'uploads/user', filename);
+    avator.mv(filepath, err=>{
+        if(err) return res.status(500).json({
+            status: "error",
+            message: err
+        })
+    });
+  
+    data = {
+      image: filename.trim(),
+      image_url: filepath.trim(),
+      ...data,
+    };
+  }
 
-  data = {
-    image: filename.trim(),
-    image_url: filepath.trim(),
-    ...data,
-  };
 
 
   const user = new User({

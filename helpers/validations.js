@@ -25,13 +25,44 @@ const loginValidation = data =>{
 const postValidation = data => {
     const schema = Joi.object().keys({
         title: Joi.string().min(3).required(),
+        user_id: Joi.number().required(),
         description: Joi.string(),
     });
     let title = data.title;
-    return schema.validate({title: title}); 
+    let user_id = data.user_id;
+    return schema.validate({title: title, user_id}); 
 }
 
+
+// vehicleMakeValidation
+const vehicleMakeValidation = data => {
+    const schema = Joi.object().keys({
+        title: Joi.string().min(3).required(),
+        user_id: Joi.number().required(),
+        description: Joi.string(),
+    });
+    let title = data.title;
+    let user_id = data.user_id;
+    return schema.validate({title: title, user_id}); 
+}
+
+
+// vehicleModelValidation
+const vehicleModelValidation = data => {
+    const schema = Joi.object().keys({
+        title: Joi.string().min(3).required(),
+        user_id: Joi.number().required(),
+        vehicle_make_id: Joi.number().required(),
+        description: Joi.string(),
+    });
+    let title = data.title;
+    let user_id = data.user_id;
+    let vehicle_make_id = data.vehicle_make_id;
+    return schema.validate({title: title, user_id, vehicle_make_id}); 
+}
 
 module.exports.registerValidation = registerValidation
 module.exports.loginValidation = loginValidation
 module.exports.postValidation = postValidation
+module.exports.vehicleMakeValidation = vehicleMakeValidation
+module.exports.vehicleModelValidation = vehicleModelValidation

@@ -2,7 +2,7 @@ module.exports = (sequelize, Sequelize) => {
     const VehicleModel = sequelize.define(
       'vehicle_models',
       {
-    fk_veh_make: {
+    vehicle_make_id: {
         type: Sequelize.INTEGER,
         references: {
             model: 'vehicle_makes',
@@ -24,15 +24,19 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING,
         min: 2
     },
-    created_by: {
-        // Set FK relationship (hasMany) with `User`
-        type: Sequelize.INTEGER,
-        required: true,
-        references: {
-          model: 'users',
-          key: 'id',
-        },
+    active: {
+      type: Sequelize.INTEGER,
+      default: 0
+    },
+    user_id: {
+      // Set FK relationship (hasMany) with `User`
+      type: Sequelize.INTEGER,
+      required: true,
+      references: {
+        model: 'users',
+        key: 'id',
       },
+    },
     },
     {
       timestamps: true,

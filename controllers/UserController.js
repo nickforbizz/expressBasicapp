@@ -1,12 +1,18 @@
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const Models = require('../models');
+const Logger = require('../services/logger');
 const User = Models.User;
 
 
 
 const getUsers = async (req, res) => {
   let users = await User.findAll({where: {active: 1}});
+  res.send(users);
+};
+
+const getAllUsers = async (req, res) => {
+  let users = await User.findAll();
   res.send(users);
 };
 
@@ -84,6 +90,7 @@ const deleteUsers = async (req, res) => {
 
 module.exports = {
   getUsers,
+  getAllUsers,
   updateUsers,
   deleteUsers
 };

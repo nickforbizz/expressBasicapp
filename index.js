@@ -11,7 +11,9 @@ dotenv.config();
 const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/users')
 const postsRoutes = require('./routes/posts');
-const User = require('./models/User');
+const makesRoutes = require('./routes/vehicle_make');
+const modelsRoutes = require('./routes/vehicle_model');
+
 
 
 
@@ -51,5 +53,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/posts', postsRoutes);
+app.use('/api/makes', makesRoutes);
+app.use('/api/models', modelsRoutes);
 
 app.listen(5000, () => console.log("server running"))

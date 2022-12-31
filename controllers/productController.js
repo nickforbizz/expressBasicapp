@@ -1,4 +1,4 @@
-const { Logger } = require('winston');
+const Logger = require('../services/logger');
 const { productValidation } = require('../helpers/validations');
 const Product = require('../models/Product');
 
@@ -12,7 +12,7 @@ const Product = require('../models/Product');
  * @param {*} res
  */
 const getProducts = async (req, res) => {
-  let records = await Product.find();
+  let records = await Product.findAll();
   res.send(records);
 };
 
@@ -26,7 +26,7 @@ const getProducts = async (req, res) => {
  * @param {*} res
  */
 const getAllProducts = async (req, res) => {
-  let records = await Product.find({active: 1});
+  let records = await Product.findAll({active: 1});
   res.send(records);
 };
 
@@ -47,22 +47,30 @@ const createProduct = async (req, res) => {
         message: error.details[0].message,
         });
 
-    let new_record = await new Product(data);
 
     try {
-        const savedRecord = await new_record.save();
-        return res.json({
-            status: 'success',
-            message: 'record saved successfuly',
-            data: savedRecord
+        let new_record = await Product.create(data);
+        let status;
+    
+        if (new_record) {
+          status = 'success';
+        } else {
+          status = 'error';
+        }
+    
+        return res.send({
+          status: status,
+          message: status + ' creating record',
         });
-    } catch (error) {
+    
+    
+      } catch (error) {
         Logger.error(error);
         return res.status(400).json({
-            status: 'error',
-            message: error
+          status: 'error',
+          message: error,
         });
-    }
+      }
 }
 
 
@@ -74,8 +82,18 @@ const createProduct = async (req, res) => {
  * @param {*} res
  */
 const updateProduct = async (req, res) => {
-    let records = await Product.find();
-    res.send(records);
+    let data = req.body;
+    let id = data?.id;
+    if (!id) return res.status(400).send(`Record ID is required`);
+
+    // check if user in db
+    let record = await Product.findByPk(id);
+    if (!record) return res.status(400).send(`Record with Id: ${id} not found`);
+
+    let patched_record = await Product.update(data, {
+        where: { id: id },
+    });
+    res.send(patched_record);
 };
 
 
@@ -87,11 +105,12 @@ const updateProduct = async (req, res) => {
  * @param {*} res
  */
 const deleteProduct = async (req, res) => {
-    let data = req.body;
     let id = req.params.id;
-  
+
     // Delete the document by its _id
-    let del_record = await Product.deleteOne({ _id: id });
+    let del_record = await Product.destroy({
+        where: { id: id },
+    });
     res.send(del_record);
   };
 

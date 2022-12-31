@@ -26,6 +26,10 @@ module.exports = (sequelize, Sequelize) => {
       imageUrl: {
         type: Sequelize.STRING,
       },
+      active: {
+        type: Sequelize.INTEGER,
+        default: 0
+      },
     },
     {
       timestamps: true,

@@ -29,6 +29,16 @@ router.post('/',
         postController.createPost);
 
 
+router.post('/update/:id', 
+        routesMiddleware, 
+        fileUpload({
+            createParentPath: true
+        }),
+        fileSizeLimiter,
+        fileExtLimiter(['.png', '.jpg', '.jpeg']),
+        postController.updatePost);
+
+
 router.post('/delete/:id', 
         routesMiddleware, 
         postController.deletePost);

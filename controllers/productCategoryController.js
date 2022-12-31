@@ -12,7 +12,7 @@ const ProductCategory = require('../models/ProductCategory');
  * @param {*} res
  */
 const getCategories = async (req, res) => {
-  let records = await ProductCategory.find();
+  let records = await ProductCategory.findAll();
   res.send(records);
 };
 
@@ -26,7 +26,7 @@ const getCategories = async (req, res) => {
  * @param {*} res
  */
 const getAllCategories = async (req, res) => {
-  let records = await ProductCategory.find({active: 1});
+  let records = await ProductCategory.findAll({active: 1});
   res.send(records);
 };
 
@@ -47,22 +47,30 @@ const createCategory = async (req, res) => {
         message: error.details[0].message,
         });
 
-    let new_record = await new ProductCategory(data);
 
     try {
-        const savedRecord = await new_record.save();
-        return res.json({
-            status: 'success',
-            message: 'record saved successfuly',
-            data: savedRecord
+        let new_record = await ProductCategory.create(data);
+        let status;
+    
+        if (new_record) {
+          status = 'success';
+        } else {
+          status = 'error';
+        }
+    
+        return res.send({
+          status: status,
+          message: status + ' creating record',
         });
-    } catch (error) {
+    
+    
+      } catch (error) {
         Logger.error(error);
         return res.status(400).json({
-            status: 'error',
-            message: error
+          status: 'error',
+          message: error,
         });
-    }
+      }
 }
 
 
@@ -74,8 +82,18 @@ const createCategory = async (req, res) => {
  * @param {*} res
  */
 const updateCategory = async (req, res) => {
-    let records = await ProductCategory.find();
-    res.send(records);
+    let data = req.body;
+    let id = data?.id;
+    if (!id) return res.status(400).send(`Record ID is required`);
+
+    // check if user in db
+    let record = await ProductCategory.findByPk(id);
+    if (!record) return res.status(400).send(`Record with Id: ${id} not found`);
+
+    let patched_record = await ProductCategory.update(data, {
+        where: { id: id },
+    });
+    res.send(patched_record);
 };
 
 
@@ -87,11 +105,12 @@ const updateCategory = async (req, res) => {
  * @param {*} res
  */
 const deleteCategory = async (req, res) => {
-    let data = req.body;
     let id = req.params.id;
-  
+
     // Delete the document by its _id
-    let del_record = await ProductCategory.deleteOne({ _id: id });
+    let del_record = await ProductCategory.destroy({
+        where: { id: id },
+    });
     res.send(del_record);
   };
 

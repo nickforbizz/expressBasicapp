@@ -1,10 +1,8 @@
-const { Logger } = require('winston');
+const Logger = require('../services/logger');
+const loggedUser = require('../helpers/loggedUser');
 const { vehicleMakeValidation } = require('../helpers/validations');
-const VehicleMake = require('../models/VehicleMake');
-
-
-
-
+const Models = require('../models/');
+const VehicleMake = Models.VehicleMake
 
 /**
  * Fetch Active VehicleMake Records
@@ -12,13 +10,9 @@ const VehicleMake = require('../models/VehicleMake');
  * @param {*} res
  */
 const getMakes = async (req, res) => {
-  let records = await VehicleMake.findAll({where: {active: 1}});
+  let records = await VehicleMake.findAll({ where: { active: 1 }, include: ['user']  });
   res.send(records);
 };
-
-
-
-
 
 /**
  * Fetch All VehicleMake Records
@@ -26,12 +20,9 @@ const getMakes = async (req, res) => {
  * @param {*} res
  */
 const getAllMakes = async (req, res) => {
-  let records = await VehicleMake.findAll();
+  let records = await VehicleMake.findAll({ include: ['user'] });
   res.send(records);
 };
-
-
-
 
 /**
  * Create Make Record
@@ -39,41 +30,42 @@ const getAllMakes = async (req, res) => {
  * @param {*} res
  */
 const createMake = async (req, res) => {
-    let data = req.body;
-    const { error } = vehicleMakeValidation(data);
-    if (error)
-        return res.status(400).json({
-        status: 'error',
-        message: error.details[0].message,
-        });
+  let data = req.body;
 
-        try {
-        let new_record = await create(data);
-
-        if (new_record) {
-            return res.json({
-                status: 'success',
-                message: 'record saved successfuly',
-                data: savedRecord
-            });
-            
-        } else {
-            return res.json({
-                status: 'error',
-                message: 'error saving record',
-            });
-        }
-    } catch (error) {
-        Logger.error(error);
-        return res.status(400).json({
-            status: 'error',
-            message: error
-        });
-    }
-}
+  // Add User Association
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  data = {user_id: logged_user?.id, ...data}
 
 
+  const { error } = vehicleMakeValidation(data);
+  if (error)
+    return res.status(400).json({
+      status: 'error',
+      message: error.details[0].message,
+    });
 
+  try {
+    let new_record = await VehicleMake.create(data);
+
+    let status = new_record ? 'Success' : 'Error';
+
+    return res.send({
+      status: status,
+      message: status + ' creating record',
+    });
+
+
+  } catch (error) {
+    Logger.error(error);
+    return res.status(400).json({
+      status: 'error',
+      message: error,
+    });
+  }
+
+
+};
 
 /**
  * Update VehicleMake Record
@@ -81,22 +73,29 @@ const createMake = async (req, res) => {
  * @param {*} res
  */
 const updateMake = async (req, res) => {
-    let data = req.body;
-    let id = data?.id;
-    if (!id) return res.status(400).send(`Record ID is required`);
-    
-    // check if user in db
-    let record = await VehicleMake.findByPk(id);
-    if (!record) return res.status(400).send(`Record with Id: ${id} not found`);
+  let data = req.body;
+  let id = req.params.id;
+  if (!id) return res.status(400).send(`Record ID is required`);
 
-    let patched_record = await User.update( data, {
-        where: { id: user_id }
-      });
-    res.send(patched_record);
+  // check if user in db
+  let record = await VehicleMake.findByPk(id);
+  if (!record) return res.status(400).send(`Record with Id: ${id} not found`);
+
+  // Add User Association
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  data = {user_id: logged_user?.id, ...data}
+
+  let patched_record = await VehicleMake.update(data, {
+    where: { id: id },
+  });
+  let status = patched_record ? 'Success' : 'Error';
+
+  return res.send({
+    status: status,
+    message: status + ' updating record',
+  });
 };
-
-
-
 
 /**
  * Delete VehicleMake Record
@@ -104,21 +103,25 @@ const updateMake = async (req, res) => {
  * @param {*} res
  */
 const deleteMake = async (req, res) => {
-    let id = req.params.id;
-  
-    // Delete the document by its _id
-    let del_record = await VehicleMake.destroy({
-        where: { id: id }
-      });
-    res.send(del_record);
-  };
+  let id = req.params.id;
 
+  // Delete the document by its _id
+  let del_record = await VehicleMake.destroy({
+    where: { id: id },
+  });
 
+  let status = del_record ? 'Success' : 'Error';
+
+  return res.send({
+    status: status,
+    message: status + ' deleting record',
+  });
+};
 
 module.exports = {
-    getMakes,
-    getAllMakes,
-    updateMake,
-    createMake,
-    deleteMake,
-  };
+  getMakes,
+  getAllMakes,
+  updateMake,
+  createMake,
+  deleteMake,
+};

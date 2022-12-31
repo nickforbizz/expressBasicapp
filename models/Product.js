@@ -72,7 +72,11 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING,
         min: 2,
       },
-      created_by: {
+      active: {
+        type: Sequelize.INTEGER,
+        default: 0
+      },
+      user_id: {
         // Set FK relationship (hasMany) with `User`
         type: Sequelize.INTEGER,
         required: true,
