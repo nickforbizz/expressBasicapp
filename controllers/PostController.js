@@ -1,7 +1,11 @@
 const path = require('path');
-const { Logger } = require('winston');
+const Logger = require('../services/logger');
+const loggedUser = require('../helpers/loggedUser');
 const { postValidation } = require('../helpers/validations');
-const Post = require('../models/Post');
+const Models = require('../models');
+const Post = Models.Post;
+const User = Models.User;
+
 
 /**
  * Fetch Active Post Records
@@ -9,7 +13,7 @@ const Post = require('../models/Post');
  * @param {*} res
  */
 const getPosts = async (req, res) => {
-  let records = await Post.find().populate('created_by');
+  let records = await Post.findAll({where: {active: 1}, include: ['user']});
   res.send(records);
 };
 
@@ -19,7 +23,7 @@ const getPosts = async (req, res) => {
  * @param {*} res
  */
 const getAllPosts = async (req, res) => {
-  let records = await Post.find({active: 1});
+  let records = await Post.findAll({ include: ['user'] });
   res.send(records);
 };
 
@@ -32,6 +36,12 @@ const createPost = async (req, res) => {
   const files = req.files; 
   const projectRootPath = path.resolve('./');
   let data = req.body;
+
+  // Add User Association
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  data = {user_id: logged_user?.id, ...data}
+
   const { error } = postValidation(data);
   if (error)
     return res.status(400).json({
@@ -41,44 +51,56 @@ const createPost = async (req, res) => {
 
   let fileNames = '';
   let filePaths = '';
-  Object.keys(files).forEach((key) => {
-    let ext = '.' + files[key].mimetype.split('/')[1];
-    let md5 = files[key].md5;
-    let filename = md5 + ext;
+  if(files){
 
-    // store the file
-    const filepath = path.join(projectRootPath, 'uploads', filename);
-    files[key].mv(filepath, err=>{
-        if(err) return res.status(500).json({
-            status: "error",
-            message: err
-        })
+    Object.keys(files).forEach((key) => {
+      let ext = '.' + files[key].mimetype.split('/')[1];
+      let md5 = files[key].md5;
+      let filename = md5 + ext;
+  
+      // store the file
+      const filepath = path.join(projectRootPath, 'uploads', filename);
+      files[key].mv(filepath, err=>{
+          if(err) return res.status(500).json({
+              status: "error",
+              message: err
+          })
+      });
+  
+      fileNames += filename + ' ';
+      filePaths += filepath + ' ';
     });
+  
+    data = {
+      image: fileNames.trim(),
+      image_url: filePaths.trim(),
+      ...data,
+    };
+  }
 
-    fileNames += filename + ' ';
-    filePaths += filepath + ' ';
-  });
-
-  data = {
-    image: fileNames.trim(),
-    image_url: filePaths.trim(),
-    ...data,
-  };
-
-  let new_post = await new Post(data);
 
   try {
-    const savedRecord = await new_post.save();
-    return res.json({
-        status: 'success',
-        message: 'record saved successfuly',
-        data: savedRecord
+    // return res.send(data);
+    let new_record = await Post.create(data);
+    let status;
+
+    if (new_record) {
+      status = 'success';
+    } else {
+      status = 'error';
+    }
+
+    return res.send({
+      status: status,
+      message: status + ' creating record',
     });
+
+
   } catch (error) {
     Logger.error(error);
     return res.status(400).json({
-        status: 'error',
-        message: error
+      status: 'error',
+      message: error,
     });
   }
 
@@ -90,8 +112,32 @@ const createPost = async (req, res) => {
  * @param {*} res
  */
 const updatePost = async (req, res) => {
-  let records = await Post.find();
-  res.send(records);
+  let data = req.body;
+  let id = req.params.id;
+  if (!id) return res.status(400).send(`Record ID is required`);
+
+  // check if user in db
+  let record = await Post.findByPk(id);
+  if (!record) return res.status(400).send(`Record with Id: ${id} not found`);
+
+
+  // Add User Association
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  data = {user_id: logged_user?.id, ...data}
+
+  let patched_record = await Post.update(data, {
+      where: { id: id },
+  });
+
+  let status = patched_record ? 'Success' : 'Error';
+
+  return res.send({
+    status: status,
+    message: status + ' updating record',
+  });
+
+
 };
 
 /**
@@ -100,12 +146,19 @@ const updatePost = async (req, res) => {
  * @param {*} res
  */
 const deletePost = async (req, res) => {
-  let data = req.body;
   let id = req.params.id;
 
   // Delete the document by its _id
-  let del_record = await Post.deleteOne({ _id: id });
-  res.send(del_record);
+  let del_record = await Post.destroy({
+      where: { id: id },
+  });
+
+  let status = del_record ? 'Success' : 'Error';
+
+  return res.send({
+    status: status,
+    message: status + ' Deleting record',
+  });
 };
 
 

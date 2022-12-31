@@ -18,6 +18,10 @@ router.post('/',
         routesMiddleware,
         vehicleModelController.createModel);
 
+router.post('/update/:id', 
+        routesMiddleware,
+        vehicleModelController.updateModel);
+
 
 router.post('/delete/:id', 
         routesMiddleware, 

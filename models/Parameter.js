@@ -29,7 +29,11 @@ module.exports = (sequelize, Sequelize) => {
       uses_2fa: {
         type: Sequelize.BOOLEAN,
       },
-      created_by: {
+      active: {
+        type: Sequelize.INTEGER,
+        default: 0
+      },
+      user_id: {
         // Set FK relationship (hasMany) with `User`
         type: Sequelize.INTEGER,
         required: true,
