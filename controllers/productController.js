@@ -1,10 +1,8 @@
 const Logger = require('../services/logger');
 const { productValidation } = require('../helpers/validations');
-const Product = require('../models/Product');
-
-
-
-
+const loggedUser = require('../helpers/loggedUser');
+const Models = require('../models');
+const Product = Models.Product;
 
 /**
  * Fetch Active Product Records
@@ -12,13 +10,12 @@ const Product = require('../models/Product');
  * @param {*} res
  */
 const getProducts = async (req, res) => {
-  let records = await Product.findAll();
+  let records = await Product.findAll({
+    where: { active: 1 },
+    include: ['user', 'make', 'product_category', 'model'],
+  });
   res.send(records);
 };
-
-
-
-
 
 /**
  * Fetch All Product Records
@@ -26,12 +23,11 @@ const getProducts = async (req, res) => {
  * @param {*} res
  */
 const getAllProducts = async (req, res) => {
-  let records = await Product.findAll({active: 1});
+  let records = await Product.findAll({
+    include: ['user', 'make', 'product_category', 'model'],
+  });
   res.send(records);
 };
-
-
-
 
 /**
  * Create Product Record
@@ -39,42 +35,36 @@ const getAllProducts = async (req, res) => {
  * @param {*} res
  */
 const createProduct = async (req, res) => {
-    let data = req.body;
-    const { error } = productValidation(data);
-    if (error)
-        return res.status(400).json({
-        status: 'error',
-        message: error.details[0].message,
-        });
+  let data = req.body;
 
+  // Add User Association
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  data = { user_id: logged_user?.id, ...data };
 
-    try {
-        let new_record = await Product.create(data);
-        let status;
-    
-        if (new_record) {
-          status = 'success';
-        } else {
-          status = 'error';
-        }
-    
-        return res.send({
-          status: status,
-          message: status + ' creating record',
-        });
-    
-    
-      } catch (error) {
-        Logger.error(error);
-        return res.status(400).json({
-          status: 'error',
-          message: error,
-        });
-      }
-}
+  const { error } = productValidation(data);
+  if (error)
+    return res.status(400).json({
+      status: 'error',
+      message: error.details[0].message,
+    });
 
+  try {
+    let new_record = await Product.create(data);
+    let status = new_record ? 'Success' : 'Error';
 
-
+    return res.send({
+      status: status,
+      message: status + ' creating record',
+    });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(400).json({
+      status: 'error',
+      message: error,
+    });
+  }
+};
 
 /**
  * Update Product Record
@@ -82,22 +72,36 @@ const createProduct = async (req, res) => {
  * @param {*} res
  */
 const updateProduct = async (req, res) => {
-    let data = req.body;
-    let id = data?.id;
-    if (!id) return res.status(400).send(`Record ID is required`);
+  let data = req.body;
+  let id = req.params.id;
+  if (!id) return res.status(400).send(`Record ID is required`);
 
-    // check if user in db
-    let record = await Product.findByPk(id);
-    if (!record) return res.status(400).send(`Record with Id: ${id} not found`);
+  // check if user in db
+  let record = await Product.findByPk(id);
+  if (!record) return res.status(400).send(`Record with Id: ${id} not found`);
 
-    let patched_record = await Product.update(data, {
-        where: { id: id },
+  // Add User Association
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  data = { user_id: logged_user?.id, ...data };
+
+  const { error } = productValidation(data);
+  if (error)
+    return res.status(400).json({
+      status: 'error',
+      message: error.details[0].message,
     });
-    res.send(patched_record);
+
+  let patched_record = await Product.update(data, {
+    where: { id: id },
+  });
+  let status = patched_record ? 'Success' : 'Error';
+
+  return res.send({
+    status: status,
+    message: status + ' updating record',
+  });
 };
-
-
-
 
 /**
  * Delete Product Record
@@ -105,21 +109,24 @@ const updateProduct = async (req, res) => {
  * @param {*} res
  */
 const deleteProduct = async (req, res) => {
-    let id = req.params.id;
+  let id = req.params.id;
 
-    // Delete the document by its _id
-    let del_record = await Product.destroy({
-        where: { id: id },
-    });
-    res.send(del_record);
-  };
+  // Delete the document by its _id
+  let del_record = await Product.destroy({
+    where: { id: id },
+  });
+  let status = del_record ? 'Success' : 'Error';
 
-
+  return res.send({
+    status: status,
+    message: status + ' deleting record',
+  });
+};
 
 module.exports = {
-    getProducts,
-    getAllProducts,
-    updateProduct,
-    createProduct,
-    deleteProduct,
-  };
+  getProducts,
+  getAllProducts,
+  updateProduct,
+  createProduct,
+  deleteProduct,
+};

@@ -2,7 +2,7 @@ module.exports = (sequelize, Sequelize) => {
   const Product = sequelize.define(
     'products',
     {
-      fk_product_cat: {
+      product_category_id: {
         type: Sequelize.INTEGER,
         required: true,
         references: {
@@ -10,7 +10,7 @@ module.exports = (sequelize, Sequelize) => {
             key: 'id'
         },
       },
-      fk_veh_make: {
+      vehicle_make_id: {
         type: Sequelize.INTEGER,
         required: true,
         references: {
@@ -18,7 +18,7 @@ module.exports = (sequelize, Sequelize) => {
             key: 'id'
         },
       },
-      fk_veh_model: {
+      vehicle_model_id: {
         // Set FK relationship (hasMany) with `VehicleModel`
         type: Sequelize.INTEGER,
         required: true,

@@ -8,21 +8,25 @@ const routesMiddleware = require('../middleware/verifyTokenMiddleware')
 
 router.get('/', 
         routesMiddleware, 
-        soldProductController.getProducts);
+        soldProductController.getSoldProducts);
 
 
-router.get('/', 
+router.get('/all', 
         routesMiddleware, 
-        soldProductController.getAllProducts);
+        soldProductController.getAllSoldProducts);
 
 router.post('/', 
         routesMiddleware,
-        soldProductController.createProduct);
+        soldProductController.createSoldProduct);
+
+router.post('/update/:id', 
+        routesMiddleware,
+        soldProductController.updateSoldProduct);
 
 
 router.post('/delete/:id', 
         routesMiddleware, 
-        soldProductController.deleteProduct);
+        soldProductController.deleteSoldProduct);
 
 
 

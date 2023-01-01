@@ -19,6 +19,10 @@ router.post('/',
         routesMiddleware,
         parameterController.createParameter);
 
+router.post('/update/:id', 
+        routesMiddleware,
+        parameterController.updateParameter);
+
 
 router.post('/delete/:id', 
         routesMiddleware, 
