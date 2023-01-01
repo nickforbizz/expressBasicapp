@@ -1,10 +1,8 @@
 const Logger = require('../services/logger');
 const { parameterValidation } = require('../helpers/validations');
-const Parameter = require('../models/Parameter.js');
-
-
-
-
+const Models = require('../models');
+const loggedUser = require('../helpers/loggedUser');
+const Parameter = Models.Parameter;
 
 /**
  * Fetch Active Parameter Records
@@ -12,13 +10,12 @@ const Parameter = require('../models/Parameter.js');
  * @param {*} res
  */
 const getParameters = async (req, res) => {
-  let records = await Parameter.findAll();
+  let records = await Parameter.findAll({
+    where: { active: 1 },
+    include: ['user'],
+  });
   res.send(records);
 };
-
-
-
-
 
 /**
  * Fetch All Parameter Records
@@ -26,12 +23,9 @@ const getParameters = async (req, res) => {
  * @param {*} res
  */
 const getAllParameters = async (req, res) => {
-  let records = await Parameter.findAll({active: 1});
+  let records = await Parameter.findAll({ include: ['user'] });
   res.send(records);
 };
-
-
-
 
 /**
  * Create Parameter Record
@@ -39,42 +33,36 @@ const getAllParameters = async (req, res) => {
  * @param {*} res
  */
 const createParameter = async (req, res) => {
-    let data = req.body;
-    const { error } = parameterValidation(data);
-    if (error)
-        return res.status(400).json({
-        status: 'error',
-        message: error.details[0].message,
-        });
+  let data = req.body;
 
+  // Add User Association
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  data = { user_id: logged_user?.id, ...data };
 
-    try {
-        let new_record = await Parameter.create(data);
-        let status;
-    
-        if (new_record) {
-          status = 'success';
-        } else {
-          status = 'error';
-        }
-    
-        return res.send({
-          status: status,
-          message: status + ' creating record',
-        });
-    
-    
-      } catch (error) {
-        Logger.error(error);
-        return res.status(400).json({
-          status: 'error',
-          message: error,
-        });
-      }
-}
+  const { error } = parameterValidation(data);
+  if (error)
+    return res.status(400).json({
+      status: 'error',
+      message: error.details[0].message,
+    });
 
+  try {
+    let new_record = await Parameter.create(data);
+    let status = new_record ? 'Success' : 'Error';
 
-
+    return res.send({
+      status: status,
+      message: status + ' creating record',
+    });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(400).json({
+      status: 'error',
+      message: error,
+    });
+  }
+};
 
 /**
  * Update Parameter Record
@@ -82,22 +70,36 @@ const createParameter = async (req, res) => {
  * @param {*} res
  */
 const updateParameter = async (req, res) => {
-    let data = req.body;
-    let id = data?.id;
-    if (!id) return res.status(400).send(`Record ID is required`);
+  let data = req.body;
+  let id = data?.id;
+  if (!id) return res.status(400).send(`Record ID is required`);
 
-    // check if user in db
-    let record = await Parameter.findByPk(id);
-    if (!record) return res.status(400).send(`Record with Id: ${id} not found`);
+  // check if user in db
+  let record = await Parameter.findByPk(id);
+  if (!record) return res.status(400).send(`Record with Id: ${id} not found`);
 
-    let patched_record = await Parameter.update(data, {
-        where: { id: id },
+  // Add User Association
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  data = { user_id: logged_user?.id, ...data };
+
+  const { error } = parameterValidation(data);
+  if (error)
+    return res.status(400).json({
+      status: 'error',
+      message: error.details[0].message,
     });
-    res.send(patched_record);
+
+  let patched_record = await Parameter.update(data, {
+    where: { id: id },
+  });
+  let status = patched_record ? 'Success' : 'Error';
+
+  return res.send({
+    status: status,
+    message: status + ' updating record',
+  });
 };
-
-
-
 
 /**
  * Delete Parameter Record
@@ -105,21 +107,24 @@ const updateParameter = async (req, res) => {
  * @param {*} res
  */
 const deleteParameter = async (req, res) => {
-    let id = req.params.id;
+  let id = req.params.id;
 
-    // Delete the document by its _id
-    let del_record = await Parameter.destroy({
-        where: { id: id },
-    });
-    res.send(del_record);
-  };
+  // Delete the document by its _id
+  let del_record = await Parameter.destroy({
+    where: { id: id },
+  });
+  let status = del_record ? 'Success' : 'Error';
 
-
+  return res.send({
+    status: status,
+    message: status + ' deleting record',
+  });
+};
 
 module.exports = {
-    getParameters,
-    getAllParameters,
-    updateParameter,
-    createParameter,
-    deleteParameter,
-  };
+  getParameters,
+  getAllParameters,
+  updateParameter,
+  createParameter,
+  deleteParameter,
+};

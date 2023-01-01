@@ -2,7 +2,7 @@ module.exports = (sequelize, Sequelize) => {
   const SoldProduct = sequelize.define(
     'sold_products',
     {
-      fk_product: {
+      product_id: {
         type: Sequelize.INTEGER,
         required: true,
         references: {

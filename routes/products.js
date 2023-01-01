@@ -19,6 +19,11 @@ router.post('/',
         productController.createProduct);
 
 
+router.post('/update/:id', 
+        routesMiddleware,
+        productController.updateProduct);
+
+
 router.post('/delete/:id', 
         routesMiddleware, 
         productController.deleteProduct);

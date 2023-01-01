@@ -10,13 +10,17 @@ router.get('/',
         routesMiddleware, 
         productCategoryController.getCategories);
 
-router.get('/', 
+router.get('/all', 
         routesMiddleware, 
         productCategoryController.getAllCategories);
         
 router.post('/', 
         routesMiddleware,
         productCategoryController.createCategory);
+
+router.post('/update/:id', 
+        routesMiddleware,
+        productCategoryController.updateCategory);
 
 
 router.post('/delete/:id', 
