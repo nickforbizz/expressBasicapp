@@ -3,6 +3,8 @@ const Logger = require('../services/logger');
 const loggedUser = require('../helpers/loggedUser');
 const { postValidation } = require('../helpers/validations');
 const Models = require('../models');
+const { getPagination, getPagingData } = require('../helpers/Pagination');
+const { Op } = require('sequelize');
 const Post = Models.Post;
 const User = Models.User;
 
@@ -13,8 +15,13 @@ const User = Models.User;
  * @param {*} res
  */
 const getPosts = async (req, res) => {
-  let records = await Post.findAll({where: {active: 1}, include: ['user']});
-  res.send(records);
+  const { page, size, title } = req.query;
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1 } : { active: 1 };
+  const { limit, offset } = getPagination(page, size);
+
+  let records = await Post.findAll({where: condition, limit, offset, include: ['user']});
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**
@@ -23,8 +30,13 @@ const getPosts = async (req, res) => {
  * @param {*} res
  */
 const getAllPosts = async (req, res) => {
-  let records = await Post.findAll({ include: ['user'] });
-  res.send(records);
+  const { page, size, title } = req.query;
+  var condition = title ? { title: { [Op.like]: `%${title}%` },  } : null;
+  const { limit, offset } = getPagination(page, size);
+
+  let records = await Post.findAll({ where: condition, limit, offset, include: ['user'] });
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**

@@ -1,5 +1,7 @@
+const { Op } = require('sequelize');
 const { Logger } = require('winston');
 const loggedUser = require('../helpers/loggedUser');
+const { getPagination, getPagingData } = require('../helpers/Pagination');
 const { productCategoryValidation } = require('../helpers/validations');
 const Models = require('../models');
 const ProductCategory = Models.ProductCategory;
@@ -10,11 +12,16 @@ const ProductCategory = Models.ProductCategory;
  * @param {*} res
  */
 const getCategories = async (req, res) => {
+  const { page, size, title } = req.query;
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1 } : { active: 1 };
+  const { limit, offset } = getPagination(page, size);
+
   let records = await ProductCategory.findAll({
-    where: { active: 1 },
+    where: condition, limit, offset,
     include: ['user'],
   });
-  res.send(records);
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**
@@ -23,8 +30,13 @@ const getCategories = async (req, res) => {
  * @param {*} res
  */
 const getAllCategories = async (req, res) => {
-  let records = await ProductCategory.findAll({ include: ['user'] });
-  res.send(records);
+  const { page, size, title } = req.query;
+  var condition = title ? { title: { [Op.like]: `%${title}%` },  } : null;
+  const { limit, offset } = getPagination(page, size);
+
+  let records = await ProductCategory.findAll({ where: condition, limit, offset, include: ['user'] });
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**

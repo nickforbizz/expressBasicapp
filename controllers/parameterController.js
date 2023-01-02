@@ -2,6 +2,8 @@ const Logger = require('../services/logger');
 const { parameterValidation } = require('../helpers/validations');
 const Models = require('../models');
 const loggedUser = require('../helpers/loggedUser');
+const { Op } = require('sequelize');
+const { getPagination, getPagingData } = require('../helpers/Pagination');
 const Parameter = Models.Parameter;
 
 /**
@@ -10,11 +12,16 @@ const Parameter = Models.Parameter;
  * @param {*} res
  */
 const getParameters = async (req, res) => {
+  const { page, size, business_name } = req.query;
+  var condition = business_name ? { business_name: { [Op.like]: `%${business_name}%` }, active: 1 } : { active: 1 };
+  const { limit, offset } = getPagination(page, size);
+
   let records = await Parameter.findAll({
-    where: { active: 1 },
+    where: condition, limit, offset,
     include: ['user'],
   });
-  res.send(records);
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**
@@ -23,7 +30,11 @@ const getParameters = async (req, res) => {
  * @param {*} res
  */
 const getAllParameters = async (req, res) => {
-  let records = await Parameter.findAll({ include: ['user'] });
+  const { page, size, business_name } = req.query;
+  var condition = business_name ? { business_name: { [Op.like]: `%${business_name}%` },  } : null;
+  const { limit, offset } = getPagination(page, size);
+
+  let records = await Parameter.findAll({  where: condition, limit, offset, include: ['user'] });
   res.send(records);
 };
 
