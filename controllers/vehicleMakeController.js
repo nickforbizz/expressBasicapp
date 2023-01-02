@@ -2,6 +2,8 @@ const Logger = require('../services/logger');
 const loggedUser = require('../helpers/loggedUser');
 const { vehicleMakeValidation } = require('../helpers/validations');
 const Models = require('../models/');
+const { Op } = require('sequelize');
+const { getPagination, getPagingData } = require('../helpers/Pagination');
 const VehicleMake = Models.VehicleMake
 
 /**
@@ -10,8 +12,13 @@ const VehicleMake = Models.VehicleMake
  * @param {*} res
  */
 const getMakes = async (req, res) => {
-  let records = await VehicleMake.findAll({ where: { active: 1 }, include: ['user']  });
-  res.send(records);
+  const { page, size, title } = req.query;
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1 } : { active: 1 };
+  const { limit, offset } = getPagination(page, size);
+
+  let records = await VehicleMake.findAll({ where: condition, limit, offset, include: ['user']  });
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**
@@ -20,8 +27,13 @@ const getMakes = async (req, res) => {
  * @param {*} res
  */
 const getAllMakes = async (req, res) => {
-  let records = await VehicleMake.findAll({ include: ['user'] });
-  res.send(records);
+  const { page, size, title } = req.query;
+  var condition = title ? { title: { [Op.like]: `%${title}%` } } : null;
+  const { limit, offset } = getPagination(page, size);
+
+  let records = await VehicleMake.findAll({ where: condition, limit, offset, include: ['user'] });
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**
@@ -76,6 +88,13 @@ const updateMake = async (req, res) => {
   let data = req.body;
   let id = req.params.id;
   if (!id) return res.status(400).send(`Record ID is required`);
+
+  const { error } = vehicleMakeValidation(data);
+  if (error)
+    return res.status(400).json({
+      status: 'error',
+      message: error.details[0].message,
+    });
 
   // check if user in db
   let record = await VehicleMake.findByPk(id);

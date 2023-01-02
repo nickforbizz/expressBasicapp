@@ -1,8 +1,8 @@
 const express  = require('express');
 const app = express();
 const dotenv = require('dotenv')
-const mongoose = require('mongoose');
 var cors = require('cors');
+var bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const corsOptions = require('./helpers/corsOptions')
 dotenv.config();
@@ -41,6 +41,7 @@ app.use(express.json())
 app.use(cookieParser())
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json())
 
 
 

@@ -2,6 +2,7 @@ const Logger = require('../services/logger');
 const { soldProductValidation } = require('../helpers/validations');
 const loggedUser = require('../helpers/loggedUser');
 const Models = require('../models');
+const { getPagination, getPagingData } = require('../helpers/Pagination');
 const SoldProduct = Models.SoldProduct;
 
 /**
@@ -10,11 +11,16 @@ const SoldProduct = Models.SoldProduct;
  * @param {*} res
  */
 const getSoldProducts = async (req, res) => {
+  const { page, size } = req.query;
+  var condition =  { active: 1 };
+  const { limit, offset } = getPagination(page, size);
+
   let records = await SoldProduct.findAll({
-    where: { active: 1 },
+    where: condition, limit, offset,
     include: ['user', 'product'],
   });
-  res.send(records);
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**
@@ -23,8 +29,11 @@ const getSoldProducts = async (req, res) => {
  * @param {*} res
  */
 const getAllSoldProducts = async (req, res) => {
-  let records = await SoldProduct.findAll({ include: ['user', 'product'] });
-  res.send(records);
+  const { page, size } = req.query;
+  const { limit, offset } = getPagination(page, size);
+  let records = await SoldProduct.findAll({ where: limit, offset, include: ['user', 'product'] });
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**

@@ -76,8 +76,11 @@ const register = async (req, res) => {
   // console.log(file);
   
   const { error } = registerValidation(data); 
-
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error)
+    return res.status(400).json({
+      status: 'error',
+      message: error.details[0].message,
+    });
 
   // check if user in db
   const emailExists = await User.findOne({ where: { email: req.body.email }});

@@ -2,6 +2,8 @@ const Logger = require('../services/logger');
 const loggedUser = require('../helpers/loggedUser');
 const { vehicleModelValidation } = require('../helpers/validations');
 const Models = require('../models');
+const { getPagination, getPagingData } = require('../helpers/Pagination');
+const { Op } = require('sequelize');
 const VehicleModel = Models.VehicleModel;
 
 /**
@@ -10,8 +12,12 @@ const VehicleModel = Models.VehicleModel;
  * @param {*} res
  */
 const getModels = async (req, res) => {
-  let records = await VehicleModel.findAll({where : { active: 1 },  include: ['user', 'make']});
-  res.send(records);
+  const { page, size, title } = req.query;
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1 } : { active: 1 };
+  const { limit, offset } = getPagination(page, size);
+  let records = await VehicleModel.findAndCountAll({ where: condition, limit, offset,  include: ['user', 'make']});
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**
@@ -20,8 +26,12 @@ const getModels = async (req, res) => {
  * @param {*} res
  */
 const getAllModels = async (req, res) => {
-  let records = await VehicleModel.findAll({ include: ['user', 'make'] });
-  res.send(records);
+  const { page, size, title } = req.query;
+  var condition = title ? { title: { [Op.like]: `%${title}%` } } : null;
+  const { limit, offset } = getPagination(page, size);
+  let records = await VehicleModel.findAndCountAll({ where: condition, limit, offset,  include: ['user', 'make']});
+  let response = getPagingData(records, page, limit);
+  res.send(response);
 };
 
 /**
