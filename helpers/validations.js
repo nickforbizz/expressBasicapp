@@ -4,11 +4,16 @@ const Joi = require('joi');
 // Register User 
 const registerValidation = data =>{
     const schema = Joi.object().keys({
-        name: Joi.string().min(5).required(),
+        id: Joi.number(),
+        name: Joi.string().min(3).required(),
         email: Joi.string().min(6).required().email(),
-        password: Joi.string().min(6).required(),
+        password: Joi.string().min(6),
     });
-    return schema.validate(data);
+    // return schema.validate(data);
+    let id = data.id;
+    let name = data.name;
+    let email = data.email;
+    return schema.validate({id, name, email}); 
 }
 
 

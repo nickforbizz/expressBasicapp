@@ -16,7 +16,7 @@ const getCategories = async (req, res) => {
   var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1 } : { active: 1 };
   const { limit, offset } = getPagination(page, size);
 
-  let records = await ProductCategory.findAll({
+  let records = await ProductCategory.findAndCountAll({
     where: condition, limit, offset,
     include: ['user'],
   });
@@ -34,7 +34,7 @@ const getAllCategories = async (req, res) => {
   var condition = title ? { title: { [Op.like]: `%${title}%` },  } : null;
   const { limit, offset } = getPagination(page, size);
 
-  let records = await ProductCategory.findAll({ where: condition, limit, offset, include: ['user'] });
+  let records = await ProductCategory.findAndCountAll({ where: condition, limit, offset, include: ['user'] });
   let response = getPagingData(records, page, limit);
   res.send(response);
 };
@@ -64,7 +64,8 @@ const createCategory = async (req, res) => {
     let status = new_record ? 'Success' : 'Error';
 
     return res.send({
-      status: status,
+      status: status,      
+      data: new_record,
       message: status + ' creating record',
     });
   } catch (error) {
@@ -106,9 +107,11 @@ const updateCategory = async (req, res) => {
     where: { id: id },
   });
   let status = patched_record ? 'Success' : 'Error';
+  patched_record = await ProductCategory.findByPk(id);
 
   return res.send({
     status: status,
+    data: patched_record,
     message: status + ' updating record',
   });
 };

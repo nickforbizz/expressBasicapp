@@ -13,6 +13,7 @@ const userRoutes = require('./routes/users')
 const postsRoutes = require('./routes/posts');
 const makesRoutes = require('./routes/vehicle_make');
 const modelsRoutes = require('./routes/vehicle_model');
+const productCategoryRoutes = require('./routes/product_category');
 
 
 
@@ -56,5 +57,6 @@ app.use('/api/user', userRoutes);
 app.use('/api/posts', postsRoutes);
 app.use('/api/makes', makesRoutes);
 app.use('/api/models', modelsRoutes);
+app.use('/api/product_category', productCategoryRoutes);
 
 app.listen(5000, () => console.log("server running"))
