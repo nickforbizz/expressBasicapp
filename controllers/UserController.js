@@ -33,10 +33,10 @@ const updateUsers = async (req, res) => {
   const projectRootPath = path.resolve('./');
 
   let data = req.body;
-
+  
   let user_id = req.params.id;
   if (!user_id) return res.status(400).send(`User ID is required`);
-
+  
   // validate
   const { error } = registerValidation(data);
   if (error)
@@ -44,7 +44,8 @@ const updateUsers = async (req, res) => {
       status: 'error',
       message: error.details[0].message,
     });
-
+  
+  // return res.send(data.password);
   // check if user in db
   const user = await User.findByPk(user_id);
   if (!user) return res.status(400).send(`User with Id: ${user_id} not found`);
@@ -52,6 +53,10 @@ const updateUsers = async (req, res) => {
   // Hash the Password
   const salt = await bcrypt.genSalt(15);
   const hashPassword = await bcrypt.hash(data.password, salt);
+
+  console.log("hashPassword");
+  console.log(hashPassword);
+
   data = {
     password: hashPassword,
     ...data,
@@ -93,11 +98,13 @@ const updateUsers = async (req, res) => {
   let patched_record = await User.update(data, {
     where: { id: user_id },
   });
+  let updated_record = await User.findByPk(user_id);
 
   let status = patched_record ? 'Success' : 'Error';
 
   return res.send({
     status: status,
+    data: updated_record,
     message: status + ' updating record',
   });
 };

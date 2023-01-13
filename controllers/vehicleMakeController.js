@@ -16,7 +16,7 @@ const getMakes = async (req, res) => {
   var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1 } : { active: 1 };
   const { limit, offset } = getPagination(page, size);
 
-  let records = await VehicleMake.findAll({ where: condition, limit, offset, include: ['user']  });
+  let records = await VehicleMake.findAndCountAll({ where: condition, limit, offset, include: ['user']  });
   let response = getPagingData(records, page, limit);
   res.send(response);
 };
@@ -31,7 +31,7 @@ const getAllMakes = async (req, res) => {
   var condition = title ? { title: { [Op.like]: `%${title}%` } } : null;
   const { limit, offset } = getPagination(page, size);
 
-  let records = await VehicleMake.findAll({ where: condition, limit, offset, include: ['user'] });
+  let records = await VehicleMake.findAndCountAll({ where: condition, limit, offset, include: ['user'] });
   let response = getPagingData(records, page, limit);
   res.send(response);
 };
@@ -64,6 +64,7 @@ const createMake = async (req, res) => {
 
     return res.send({
       status: status,
+      data: new_record,
       message: status + ' creating record',
     });
 
@@ -108,10 +109,13 @@ const updateMake = async (req, res) => {
   let patched_record = await VehicleMake.update(data, {
     where: { id: id },
   });
+
   let status = patched_record ? 'Success' : 'Error';
+  patched_record = await VehicleMake.findByPk(id);
 
   return res.send({
     status: status,
+    data: patched_record,
     message: status + ' updating record',
   });
 };

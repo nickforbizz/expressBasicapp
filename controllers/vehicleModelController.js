@@ -97,6 +97,7 @@ const updateModel = async (req, res) => {
     return res.status(400).json({
       status: 'error',
       message: error.details[0].message,
+      
     });
 
 
@@ -109,6 +110,7 @@ const updateModel = async (req, res) => {
   return res.send({
     status: status,
     message: status + ' updating record',
+    data: patched_record,
   });
 };
 

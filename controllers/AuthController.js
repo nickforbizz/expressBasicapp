@@ -7,6 +7,7 @@ const {
   registerValidation,
 } = require('../helpers/validations');
 const Models = require('../models');
+const { getPagination, getPagingData } = require('../helpers/Pagination');
 const User = Models.User; 
 
 /**
@@ -68,6 +69,7 @@ const logout = async (req, res) => {
  */
 const register = async (req, res) => {
   const file = req.files;
+  const { page, size } = req.query;
   const projectRootPath = path.resolve('./');
 
   
@@ -87,6 +89,7 @@ const register = async (req, res) => {
   if (emailExists)
     return res.status(400).send(`Email: ${req.body.email} already exists`);
 
+  if(!req.body.password) req.body.password= 'user12345'
   // Hash the Password
   const salt = await bcrypt.genSalt(15);
   const hashPassword = await bcrypt.hash(req.body.password, salt);
@@ -123,12 +126,19 @@ const register = async (req, res) => {
     email: data.email,
     password: hashPassword,
     image: data.image,
+    active: data.active,
     imageUrl: data.image_url
   });
 
   try {
     const savedUser = await user.save();
-    res.send(savedUser);
+    let status = savedUser ? 'Success' : 'Error';
+    
+    return res.send({
+      status: status,
+      data: savedUser,
+      message: status + ' saving record',
+    });
   } catch (error) {
     logger.error(error);
     res.status(400).send(error);
