@@ -16,7 +16,7 @@ const getProducts = async (req, res) => {
   var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1 } : { active: 1 };
   const { limit, offset } = getPagination(page, size);
 
-  let records = await Product.findAll({
+  let records = await Product.findAndCountAll({
     where: condition, limit, offset,
     include: ['user', 'make', 'product_category', 'model'],
   });
@@ -34,7 +34,7 @@ const getAllProducts = async (req, res) => {
   var condition = title ? { title: { [Op.like]: `%${title}%` } } : null;
   const { limit, offset } = getPagination(page, size);
 
-  let records = await Product.findAll({
+  let records = await Product.findAndCountAll({
     where: condition, limit, offset,
     include: ['user', 'make', 'product_category', 'model'],
   });
@@ -69,6 +69,7 @@ const createProduct = async (req, res) => {
 
     return res.send({
       status: status,
+      data: new_record,
       message: status + ' creating record',
     });
   } catch (error) {
@@ -106,13 +107,16 @@ const updateProduct = async (req, res) => {
       message: error.details[0].message,
     });
 
+    console.log(data);
   let patched_record = await Product.update(data, {
     where: { id: id },
   });
   let status = patched_record ? 'Success' : 'Error';
+  patched_record = await Product.findByPk(id);
 
   return res.send({
     status: status,
+    data: patched_record,
     message: status + ' updating record',
   });
 };

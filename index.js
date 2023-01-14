@@ -14,6 +14,7 @@ const postsRoutes = require('./routes/posts');
 const makesRoutes = require('./routes/vehicle_make');
 const modelsRoutes = require('./routes/vehicle_model');
 const productCategoryRoutes = require('./routes/product_category');
+const productsRoutes = require('./routes/products');
 
 
 
@@ -50,7 +51,6 @@ app.use(bodyParser.json())
 
 
 
-
 // Route Middleware
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
@@ -58,5 +58,6 @@ app.use('/api/posts', postsRoutes);
 app.use('/api/makes', makesRoutes);
 app.use('/api/models', modelsRoutes);
 app.use('/api/product_category', productCategoryRoutes);
+app.use('/api/products', productsRoutes);
 
 app.listen(5000, () => console.log("server running"))
