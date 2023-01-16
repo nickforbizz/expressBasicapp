@@ -87,6 +87,8 @@ const createProduct = async (req, res) => {
  * @param {*} res
  */
 const updateProduct = async (req, res) => {
+  const { page, size } = req.query;
+  const { limit, offset } = getPagination(page, size);
   let data = req.body;
   let id = req.params.id;
   if (!id) return res.status(400).send(`Record ID is required`);
@@ -108,15 +110,39 @@ const updateProduct = async (req, res) => {
     });
 
     console.log(data);
-  let patched_record = await Product.update(data, {
+  let patching_data = {
+    product_category_id: data?.product_category_id,
+    vehicle_make_id: data?.vehicle_make_id,
+    vehicle_model_id: data?.vehicle_model_id,
+    title: data?.title,
+    description: data?.description,
+    quantity: data?.quantity,
+    size: data?.size,
+    color: data?.color,
+    discount: data?.discount,
+    discount_amt: data?.discount_amt,
+    is_sold: data?.is_sold,
+    price: data?.price,
+    condition: data?.condition,
+    body_type: data?.body_type,
+    active: data?.active,
+    user_id: data?.user_id,
+  }
+  let patched_record = await Product.update(patching_data, {
     where: { id: id },
   });
   let status = patched_record ? 'Success' : 'Error';
-  patched_record = await Product.findByPk(id);
+  // patched_record = await Product.findByPk(id);
+  patched_record = await Product.findAndCountAll({
+    where: {id: id}, limit, offset,
+    include: ['user', 'make', 'product_category', 'model'],
+  });
+  let response = getPagingData(patched_record, page, limit);
+  // res.send(response);
 
   return res.send({
     status: status,
-    data: patched_record,
+    data: response,
     message: status + ' updating record',
   });
 };
