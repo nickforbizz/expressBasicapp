@@ -106,6 +106,7 @@ const updateModel = async (req, res) => {
     where: { id: id },
   });
   let status = patched_record ? 'Success' : 'Error';
+  patched_record = await VehicleModel.findByPk(id);
 
   return res.send({
     status: status,
