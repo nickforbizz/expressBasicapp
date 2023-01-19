@@ -1,9 +1,8 @@
 const Logger = require('../services/logger');
 const { soldProductValidation } = require('../helpers/validations');
 const loggedUser = require('../helpers/loggedUser');
-const Models = require('../models');
 const { getPagination, getPagingData } = require('../helpers/Pagination');
-const SoldProduct = Models.SoldProduct;
+const { Product, SoldProduct } = require('../models');
 
 /**
  * Fetch Active SoldProduct Records
@@ -15,7 +14,7 @@ const getSoldProducts = async (req, res) => {
   var condition =  { active: 1 };
   const { limit, offset } = getPagination(page, size);
 
-  let records = await SoldProduct.findAll({
+  let records = await SoldProduct.findAndCountAll({
     where: condition, limit, offset,
     include: ['user', 'product'],
   });
@@ -30,8 +29,11 @@ const getSoldProducts = async (req, res) => {
  */
 const getAllSoldProducts = async (req, res) => {
   const { page, size } = req.query;
+  var condition =  {  };
   const { limit, offset } = getPagination(page, size);
-  let records = await SoldProduct.findAll({ where: limit, offset, include: ['user', 'product'] });
+  let records = await SoldProduct.findAndCountAll({ where: condition, limit, offset, include: ['user', 'product'] });
+  console.log("records");
+  console.log(records);
   let response = getPagingData(records, page, limit);
   res.send(response);
 };
@@ -60,8 +62,14 @@ const createSoldProduct = async (req, res) => {
     let new_record = await SoldProduct.create(data);
     let status = new_record ? 'Success' : 'Error';
 
+    // update Product as sold
+    await Product.update({is_sold:1}, {
+      where: { id: new_record.product_id },
+    })
+
     return res.send({
       status: status,
+      data: new_record,
       message: status + ' creating record',
     });
   } catch (error) {
@@ -79,6 +87,8 @@ const createSoldProduct = async (req, res) => {
  * @param {*} res
  */
 const updateSoldProduct = async (req, res) => {
+  const { page, size } = req.query;
+  const { limit, offset } = getPagination(page, size);
   let data = req.body;
   let id = req.params.id;
   if (!id) return res.status(400).send(`Record ID is required`);
@@ -103,9 +113,16 @@ const updateSoldProduct = async (req, res) => {
     where: { id: id },
   });
   let status = patched_record ? 'Success' : 'Error';
+  // patched_record = await SoldProduct.findByPk(id);
+  patched_record = await SoldProduct.findAndCountAll({
+    where: {id: id}, limit, offset,
+    include: ['user', 'product'],
+  });
+  let response = getPagingData(patched_record, page, limit);
 
   return res.send({
     status: status,
+    data: response,
     message: status + ' updating record',
   });
 };

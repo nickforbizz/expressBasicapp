@@ -14,6 +14,10 @@ router.get('/all',
         routesMiddleware, 
         productController.getAllProducts);
 
+router.get('/stock', 
+        routesMiddleware, 
+        productController.getStockedProducts)
+
 router.post('/', 
         routesMiddleware,
         productController.createProduct);

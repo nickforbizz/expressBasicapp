@@ -43,6 +43,26 @@ const getAllProducts = async (req, res) => {
   res.send(response);
 };
 
+
+/**
+ * Fetch All Product Records
+ * @param {*} req
+ * @param {*} res
+ */
+const getStockedProducts = async (req, res) => {
+  const { page, size, title } = req.query;
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, is_sold: 0 } : null;
+  const { limit, offset } = getPagination(page, size);
+
+  let records = await Product.findAndCountAll({
+    where: condition, limit, offset,
+    include: ['user', 'make', 'product_category', 'model'],
+  });
+
+  let response = getPagingData(records, page, limit);
+  res.send(response);
+};
+
 /**
  * Create Product Record
  * @param {*} req
@@ -170,6 +190,7 @@ const deleteProduct = async (req, res) => {
 module.exports = {
   getProducts,
   getAllProducts,
+  getStockedProducts,
   updateProduct,
   createProduct,
   deleteProduct,
