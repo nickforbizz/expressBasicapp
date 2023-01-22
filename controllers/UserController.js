@@ -28,6 +28,17 @@ const getAllUsers = async (req, res) => {
   res.send(response);
 };
 
+const getLatestUsers = async (req, res) => {
+  const { page, size=13, email } = req.query;
+  var condition = email ? { email: { [Op.like]: `%${email}%` } } : null;
+  let order = [['id','DESC']];
+  const { limit, offset } = getPagination(page, size);
+
+  let users = await User.findAndCountAll({ where: condition, order, limit, offset });
+  let response = getPagingData(users, page, limit);
+  res.send(response);
+};
+
 const updateUsers = async (req, res) => {
   const file = req.files;
   const projectRootPath = path.resolve('./');
@@ -127,6 +138,7 @@ const deleteUsers = async (req, res) => {
 module.exports = {
   getUsers,
   getAllUsers,
+  getLatestUsers,
   updateUsers,
   deleteUsers,
 };
