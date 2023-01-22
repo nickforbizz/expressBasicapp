@@ -9,6 +9,7 @@ const routesMiddleware = require('../middleware/verifyTokenMiddleware');
 
 router.get('/', routesMiddleware, userController.getUsers);
 router.get('/all', routesMiddleware, userController.getAllUsers);
+router.get('/latest', routesMiddleware, userController.getLatestUsers);
 router.post('/update/:id', fileUpload({
     createParentPath: true
   }),
