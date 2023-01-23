@@ -125,6 +125,19 @@ const parameterValidation = data => {
     return schema.validate({business_name, business_id, user_id}); 
 }
 
+
+// productCategoryValidation
+const businessValidation = data => {
+    const schema = Joi.object().keys({
+        title: Joi.string().min(3).required(),
+        user_id: Joi.number().required(),
+        description: Joi.string(),
+    });
+    let title = data.title;
+    let user_id = data.user_id;
+    return schema.validate({title: title, user_id}); 
+}
+
 module.exports.registerValidation = registerValidation
 module.exports.loginValidation = loginValidation
 module.exports.postValidation = postValidation
@@ -134,3 +147,4 @@ module.exports.productCategoryValidation = productCategoryValidation
 module.exports.productValidation = productValidation
 module.exports.soldProductValidation = soldProductValidation
 module.exports.parameterValidation = parameterValidation
+module.exports.businessValidation = businessValidation
