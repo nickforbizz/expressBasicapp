@@ -26,6 +26,16 @@ module.exports = (sequelize, Sequelize) => {
       imageUrl: {
         type: Sequelize.STRING,
       },
+      business_id: {
+        // Set FK relationship (hasMany) with `User`
+        type: Sequelize.INTEGER,
+        required: true,
+        default: 0,
+        references: {
+          model: 'business',
+          key: 'id',
+        },
+      },
       active: {
         type: Sequelize.INTEGER,
         default: 0
