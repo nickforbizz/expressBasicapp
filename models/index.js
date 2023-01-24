@@ -19,6 +19,7 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
+db.Business = require('./Business')(sequelize, Sequelize);
 db.User = require('./User')(sequelize, Sequelize);
 db.Parameter = require('./Parameter')(sequelize, Sequelize);
 db.ProductCategory = require('./ProductCategory')(sequelize, Sequelize);
@@ -29,6 +30,14 @@ db.SoldProduct = require('./SoldProduct')(sequelize, Sequelize);
 db.Post = require('./Post')(sequelize, Sequelize);
 
 // Relationships
+// User
+db.Business.hasMany(db.User, { as: 'users' });
+db.User.belongsTo(db.Business, {
+  foreignKey: 'BusinessId',
+  as: 'business',
+});
+
+// Post
 db.User.hasMany(db.Post, { as: 'posts' });
 db.Post.belongsTo(db.User, {
   foreignKey: 'UserId',
@@ -103,6 +112,9 @@ db.Parameter.belongsTo(db.User, {
   foreignKey: 'UserId',
   as: 'user',
 });
+
+
+
 
 
 module.exports = db;

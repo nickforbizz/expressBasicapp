@@ -17,8 +17,7 @@ const getBusinesses = async (req, res) => {
   const { limit, offset } = getPagination(page, size);
 
   let records = await Business.findAndCountAll({
-    where: condition, limit, offset,
-    include: ['user'],
+    where: condition, limit, offset
   });
   let response = getPagingData(records, page, limit);
   res.send(response);
@@ -34,7 +33,7 @@ const getAllBusinesses = async (req, res) => {
   var condition = title ? { title: { [Op.like]: `%${title}%` },  } : null;
   const { limit, offset } = getPagination(page, size);
 
-  let records = await Business.findAndCountAll({ where: condition, limit, offset, include: ['user'] });
+  let records = await Business.findAndCountAll({ where: condition, limit, offset });
   let response = getPagingData(records, page, limit);
   res.send(response);
 };
