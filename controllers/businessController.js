@@ -94,6 +94,7 @@ const updateBusiness = async (req, res) => {
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
   data = { user_id: logged_user?.id, ...data };
+  console.log(data);
 
   const { error } = businessValidation(data);
   if (error)
