@@ -10,6 +10,11 @@ module.exports = (sequelize, Sequelize) => {
         },
         required: true
     },
+    business_id: {
+      type: Sequelize.INTEGER,
+      required: true,
+      default: 0
+    },
     title:{
         type: Sequelize.STRING,
         required: true,

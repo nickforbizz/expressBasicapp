@@ -4,6 +4,7 @@ const loggedUser = require('../helpers/loggedUser');
 const { getPagination, getPagingData } = require('../helpers/Pagination');
 const { Product, SoldProduct, User, VehicleMake } = require('../models');
 const { Op } = require('sequelize');
+const BusinessQuery = require('../helpers/businessQuery');
 
 /**
  * Fetch Active SoldProduct Records
@@ -11,8 +12,14 @@ const { Op } = require('sequelize');
  * @param {*} res
  */
 const getStats = async (req, res) => {
-  var condition_active =  { active: 1 };
-  var condition_inactive =  { active: {[Op.or]: [0, null]} };
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+  
+  var condition_active =  { active: 1, ...bs_query };
+  var condition_inactive =  { active: {[Op.or]: [0, null]}, ...bs_query };
 
   // Users
   let active_users = await User.count({

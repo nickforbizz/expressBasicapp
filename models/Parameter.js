@@ -33,6 +33,11 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.INTEGER,
         default: 0
       },
+      business_id: {
+        type: Sequelize.INTEGER,
+        required: true,
+        default: 0
+      },
       user_id: {
         // Set FK relationship (hasMany) with `User`
         type: Sequelize.INTEGER,

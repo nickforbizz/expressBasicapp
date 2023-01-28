@@ -72,6 +72,11 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING,
         min: 2,
       },
+      business_id: {
+        type: Sequelize.INTEGER,
+        required: true,
+        default: 0
+      },
       active: {
         type: Sequelize.INTEGER,
         default: 0

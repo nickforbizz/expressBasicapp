@@ -15,6 +15,11 @@ module.exports = (sequelize, Sequelize) => {
         min: 5,
         max: 255,
       },
+      business_id: {
+        type: Sequelize.INTEGER,
+        required: true,
+        default: 0
+      },
       active: {
         type: Sequelize.INTEGER,
         default: 0

@@ -4,6 +4,7 @@ const loggedUser = require('../helpers/loggedUser');
 const Models = require('../models');
 const { Op } = require('sequelize');
 const { getPagination, getPagingData } = require('../helpers/Pagination');
+const BusinessQuery = require('../helpers/businessQuery');
 const Product = Models.Product;
 
 /**
@@ -13,7 +14,12 @@ const Product = Models.Product;
  */
 const getProducts = async (req, res) => {
   const { page, size, title } = req.query;
-  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1 } : { active: 1 };
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1, ...bs_query } : { active: 1, ...bs_query };
   const { limit, offset } = getPagination(page, size);
 
   let records = await Product.findAndCountAll({
@@ -31,7 +37,13 @@ const getProducts = async (req, res) => {
  */
 const getAllProducts = async (req, res) => {
   const { page, size, title } = req.query;
-  var condition = title ? { title: { [Op.like]: `%${title}%` } } : null;
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, ...bs_query } : bs_query;
   const { limit, offset } = getPagination(page, size);
 
   let records = await Product.findAndCountAll({
@@ -51,7 +63,12 @@ const getAllProducts = async (req, res) => {
  */
 const getStockedProducts = async (req, res) => {
   const { page, size, title } = req.query;
-  var condition = title ? { title: { [Op.like]: `%${title}%` }, is_sold: 0 } : null;
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, is_sold: 0, ...bs_query } : bs_query;
   const { limit, offset } = getPagination(page, size);
 
   let records = await Product.findAndCountAll({
@@ -74,7 +91,7 @@ const createProduct = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, ...data };
+  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
 
   const { error } = productValidation(data);
   if (error)
@@ -120,7 +137,7 @@ const updateProduct = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, ...data };
+  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
 
   const { error } = productValidation(data);
   if (error)

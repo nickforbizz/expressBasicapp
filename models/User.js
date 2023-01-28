@@ -41,6 +41,11 @@ module.exports = (sequelize, Sequelize) => {
         required: true,
         default: 0
       },
+      is_super_admin: {
+        type: Sequelize.INTEGER,
+        required: true,
+        default: 0
+      },
       active: {
         type: Sequelize.INTEGER,
         default: 0
