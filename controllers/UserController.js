@@ -6,12 +6,21 @@ const Logger = require('../services/logger');
 const { registerValidation } = require('../helpers/validations');
 const { getPagination, getPagingData } = require('../helpers/Pagination');
 const { Op } = require('sequelize');
+const BusinessQuery = require('../helpers/businessQuery');
+const loggedUser = require('../helpers/loggedUser');
 
 const User = Models.User;
 
 const getUsers = async (req, res) => {
   const { page, size, email } = req.query;
-  var condition = email ? { email: { [Op.like]: `%${email}%` }, active: 1 } : null;
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+  console.log(bs_query);
+
+  var condition = email ? { email: { [Op.like]: `%${email}%` }, bs_query, active: 1 } : bs_query;
   const { limit, offset } = getPagination(page, size);
   let users = await User.findAndCountAll({ where: condition, limit, offset, include: ['business'] });
   let response = getPagingData(users, page, limit);
