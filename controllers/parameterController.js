@@ -13,7 +13,13 @@ const Parameter = Models.Parameter;
  */
 const getParameters = async (req, res) => {
   const { page, size, business_name } = req.query;
-  var condition = business_name ? { business_name: { [Op.like]: `%${business_name}%` }, active: 1 } : { active: 1 };
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+
+  var condition = business_name ? { business_name: { [Op.like]: `%${business_name}%` }, ...bs_query, active: 1 } : { active: 1, ...bs_query };
   const { limit, offset } = getPagination(page, size);
 
   let records = await Parameter.findAll({
@@ -31,7 +37,13 @@ const getParameters = async (req, res) => {
  */
 const getAllParameters = async (req, res) => {
   const { page, size, business_name } = req.query;
-  var condition = business_name ? { business_name: { [Op.like]: `%${business_name}%` },  } : null;
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+
+  var condition = business_name ? { business_name: { [Op.like]: `%${business_name}%` },  ...bs_query} : bs_query;
   const { limit, offset } = getPagination(page, size);
 
   let records = await Parameter.findAll({  where: condition, limit, offset, include: ['user'] });
@@ -49,7 +61,7 @@ const createParameter = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, ...data };
+  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
 
   const { error } = parameterValidation(data);
   if (error)
@@ -92,7 +104,7 @@ const updateParameter = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, ...data };
+  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
 
   const { error } = parameterValidation(data);
   if (error)

@@ -16,7 +16,13 @@ const User = Models.User;
  */
 const getPosts = async (req, res) => {
   const { page, size, title } = req.query;
-  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1 } : { active: 1 };
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1, ...bs_query } : { active: 1, ...bs_query };
   const { limit, offset } = getPagination(page, size);
 
   let records = await Post.findAll({where: condition, limit, offset, include: ['user']});
@@ -31,7 +37,13 @@ const getPosts = async (req, res) => {
  */
 const getAllPosts = async (req, res) => {
   const { page, size, title } = req.query;
-  var condition = title ? { title: { [Op.like]: `%${title}%` },  } : null;
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+
+  var condition = title ? { title: { [Op.like]: `%${title}%` },  ...bs_query} : bs_query;
   const { limit, offset } = getPagination(page, size);
 
   let records = await Post.findAll({ where: condition, limit, offset, include: ['user'] });
@@ -52,7 +64,7 @@ const createPost = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = {user_id: logged_user?.id, ...data}
+  data = {user_id: logged_user?.id, business_id: logged_user?.business_id, ...data}
 
   const { error } = postValidation(data);
   if (error)
@@ -136,11 +148,11 @@ const updatePost = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = {user_id: logged_user?.id, ...data}
+  data = {user_id: logged_user?.id, business_id: logged_user?.business_id, ...data}
 
   let patched_record = await Post.update(data, {
       where: { id: id },
-  });
+  }); 
 
   let status = patched_record ? 'Success' : 'Error';
 

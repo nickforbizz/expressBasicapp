@@ -18,9 +18,8 @@ const getUsers = async (req, res) => {
   const logged_user = await loggedUser(user_email);
   let bs_query = await BusinessQuery(logged_user.id);
 
-  console.log(bs_query);
 
-  var condition = email ? { email: { [Op.like]: `%${email}%` }, bs_query, active: 1 } : bs_query;
+  var condition = email ? { email: { [Op.like]: `%${email}%` }, ...bs_query, active: 1 } : bs_query;
   const { limit, offset } = getPagination(page, size);
   let users = await User.findAndCountAll({ where: condition, limit, offset, include: ['business'] });
   let response = getPagingData(users, page, limit);
@@ -29,7 +28,12 @@ const getUsers = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   const { page, size, email } = req.query;
-  var condition = email ? { email: { [Op.like]: `%${email}%` } } : null;
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+  var condition = email ? { email: { [Op.like]: `%${email}%` }, ...bs_query } : bs_query;
   const { limit, offset } = getPagination(page, size);
 
   let users = await User.findAndCountAll({ where: condition, limit, offset, include: ['business'] });
@@ -39,7 +43,12 @@ const getAllUsers = async (req, res) => {
 
 const getLatestUsers = async (req, res) => {
   const { page, size=13, email } = req.query;
-  var condition = email ? { email: { [Op.like]: `%${email}%` } } : null;
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+  
+  var condition = email ? { email: { [Op.like]: `%${email}%` }, ...bs_query } : bs_query;
   let order = [['id','DESC']];
   const { limit, offset } = getPagination(page, size);
 

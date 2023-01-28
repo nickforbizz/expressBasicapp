@@ -9,7 +9,7 @@ const BusinessQuery = async (user_id) => {
 
     const user = await User.findByPk(user_id);
     if(!user) return null;
-    if(user.is_admin == 1) return null;
+    if(user.is_super_admin == 1) return null;
 
     bs_query = {business_id: user.business_id}
     return bs_query;

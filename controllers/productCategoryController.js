@@ -13,7 +13,12 @@ const ProductCategory = Models.ProductCategory;
  */
 const getCategories = async (req, res) => {
   const { page, size, title } = req.query;
-  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1 } : { active: 1 };
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1, ...bs_query } : { active: 1, ...bs_query };
   const { limit, offset } = getPagination(page, size);
 
   let records = await ProductCategory.findAndCountAll({
@@ -31,7 +36,12 @@ const getCategories = async (req, res) => {
  */
 const getAllCategories = async (req, res) => {
   const { page, size, title } = req.query;
-  var condition = title ? { title: { [Op.like]: `%${title}%` },  } : null;
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+  var condition = title ? { title: { [Op.like]: `%${title}%` }, ...bs_query } : bs_query;
   const { limit, offset } = getPagination(page, size);
 
   let records = await ProductCategory.findAndCountAll({ where: condition, limit, offset, include: ['user'] });
@@ -50,7 +60,7 @@ const createCategory = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, ...data };
+  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
 
   const { error } = productCategoryValidation(data);
   if (error)
@@ -94,7 +104,7 @@ const updateCategory = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, ...data };
+  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
 
   const { error } = productCategoryValidation(data);
   if (error)

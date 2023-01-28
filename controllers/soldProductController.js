@@ -3,6 +3,7 @@ const { soldProductValidation } = require('../helpers/validations');
 const loggedUser = require('../helpers/loggedUser');
 const { getPagination, getPagingData } = require('../helpers/Pagination');
 const { Product, SoldProduct } = require('../models');
+const BusinessQuery = require('../helpers/businessQuery');
 
 /**
  * Fetch Active SoldProduct Records
@@ -11,7 +12,12 @@ const { Product, SoldProduct } = require('../models');
  */
 const getSoldProducts = async (req, res) => {
   const { page, size } = req.query;
-  var condition =  { active: 1 };
+
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+
+  var condition =  { active: 1, ...bs_query };
   const { limit, offset } = getPagination(page, size);
 
   let records = await SoldProduct.findAndCountAll({
@@ -29,7 +35,12 @@ const getSoldProducts = async (req, res) => {
  */
 const getAllSoldProducts = async (req, res) => {
   const { page, size } = req.query;
-  var condition =  {  };
+  
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
+  
+  var condition =  { ...bs_query };
   const { limit, offset } = getPagination(page, size);
   let records = await SoldProduct.findAndCountAll({ where: condition, limit, offset, include: ['user', 'product'] });
   console.log("records");
@@ -49,7 +60,7 @@ const createSoldProduct = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, ...data };
+  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
 
   const { error } = soldProductValidation(data);
   if (error)
@@ -100,7 +111,7 @@ const updateSoldProduct = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, ...data };
+  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
 
   const { error } = soldProductValidation(data);
   if (error)

@@ -24,6 +24,11 @@ module.exports = (sequelize, Sequelize) => {
       image_url: {
         type: Sequelize.STRING,
       },
+      business_id: {
+        type: Sequelize.INTEGER,
+        required: true,
+        default: 0
+      },
       active: {
         type: Sequelize.INTEGER,
         default: 0
