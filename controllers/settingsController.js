@@ -1,10 +1,36 @@
-const Logger = require('../services/logger');
-const { soldProductValidation } = require('../helpers/validations');
 const loggedUser = require('../helpers/loggedUser');
-const { getPagination, getPagingData } = require('../helpers/Pagination');
-const { Product, SoldProduct, User, VehicleMake } = require('../models');
+const { Product, SoldProduct, User, VehicleMake, sequelize } = require('../models');
 const { Op } = require('sequelize');
 const BusinessQuery = require('../helpers/businessQuery');
+
+
+
+
+/**
+ * Fetch Active SoldProduct Records
+ * @param {*} req
+ * @param {*} res
+ */
+const getCharts = async (req, res) => {
+
+  const users = await User.findAll({
+    attributes: [['created_at', 'month'], [sequelize.fn('count', sequelize.col('created_at')), 'count']],
+    group: sequelize.fn('month', sequelize.col('created_at')),
+    raw: true
+  });
+
+
+  const sales = null;
+
+
+  res.send({
+    sales,
+    users,
+  });
+
+}
+
+
 
 /**
  * Fetch Active SoldProduct Records
@@ -91,5 +117,6 @@ const deleteItem = async (req, res) => {
 
 module.exports = {
   getStats,
+  getCharts,
   deleteItem,
 };
