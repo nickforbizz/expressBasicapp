@@ -11,6 +11,10 @@ router.get('/stats',
         settingsController.getStats);
 
 
+router.get('/charts', 
+        routesMiddleware, 
+        settingsController.getCharts);
+
 
 
 router.post('/delete/:id', 
