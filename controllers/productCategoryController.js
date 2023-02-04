@@ -1,4 +1,3 @@
-const path = require('path');
 const { Op } = require('sequelize');
 const { Logger } = require('winston');
 const BusinessQuery = require('../helpers/businessQuery');
@@ -72,39 +71,7 @@ const createCategory = async (req, res) => {
     });
 
 
-  // image upload
-  let fileNames = '';
-  let filePaths = '';
-  if (files) {
-    Object.keys(files).forEach((key) => {
-      let ext = '.' + files[key].mimetype.split('/')[1];
-      let md5 = files[key].md5;
-      let filename = md5 + ext;
 
-      // store the file
-      const filepath = path.join(projectRootPath, 'uploads', filename);
-      files[key].mv(filepath, (err) => {
-        if (err)
-          return res.status(500).json({
-            status: 'error',
-            message: err,
-          });
-      });
-
-      fileNames += filename + ' ';
-      filePaths += filepath + ' ';
-    });
-
-    // :TODO Add Schema for Product Images
-
-    data = {
-      image: fileNames.trim(),
-      image_url: filePaths.trim(),
-      ...data,
-    };
-  }
-
-  // // image upload / end
 
   try {
     let new_record = await ProductCategory.create(data);

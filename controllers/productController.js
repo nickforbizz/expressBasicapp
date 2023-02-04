@@ -1,3 +1,4 @@
+const path = require('path');
 const Logger = require('../services/logger');
 const { productValidation } = require('../helpers/validations');
 const loggedUser = require('../helpers/loggedUser');
@@ -19,11 +20,15 @@ const getProducts = async (req, res) => {
   const logged_user = await loggedUser(user_email);
   let bs_query = await BusinessQuery(logged_user.id);
 
-  var condition = title ? { title: { [Op.like]: `%${title}%` }, active: 1, ...bs_query } : { active: 1, ...bs_query };
+  var condition = title
+    ? { title: { [Op.like]: `%${title}%` }, active: 1, ...bs_query }
+    : { active: 1, ...bs_query };
   const { limit, offset } = getPagination(page, size);
 
   let records = await Product.findAndCountAll({
-    where: condition, limit, offset,
+    where: condition,
+    limit,
+    offset,
     include: ['user', 'make', 'product_category', 'model'],
   });
   let response = getPagingData(records, page, limit);
@@ -42,19 +47,21 @@ const getAllProducts = async (req, res) => {
   const logged_user = await loggedUser(user_email);
   let bs_query = await BusinessQuery(logged_user.id);
 
-
-  var condition = title ? { title: { [Op.like]: `%${title}%` }, ...bs_query } : bs_query;
+  var condition = title
+    ? { title: { [Op.like]: `%${title}%` }, ...bs_query }
+    : bs_query;
   const { limit, offset } = getPagination(page, size);
 
   let records = await Product.findAndCountAll({
-    where: condition, limit, offset,
+    where: condition,
+    limit,
+    offset,
     include: ['user', 'make', 'product_category', 'model'],
   });
 
   let response = getPagingData(records, page, limit);
   res.send(response);
 };
-
 
 /**
  * Fetch All Product Records
@@ -68,11 +75,15 @@ const getStockedProducts = async (req, res) => {
   const logged_user = await loggedUser(user_email);
   let bs_query = await BusinessQuery(logged_user.id);
 
-  var condition = title ? { title: { [Op.like]: `%${title}%` }, is_sold: 0, ...bs_query } : bs_query;
+  var condition = title
+    ? { title: { [Op.like]: `%${title}%` }, is_sold: 0, ...bs_query }
+    : bs_query;
   const { limit, offset } = getPagination(page, size);
 
   let records = await Product.findAndCountAll({
-    where: condition, limit, offset,
+    where: condition,
+    limit,
+    offset,
     include: ['user', 'make', 'product_category', 'model'],
   });
 
@@ -86,12 +97,18 @@ const getStockedProducts = async (req, res) => {
  * @param {*} res
  */
 const createProduct = async (req, res) => {
+  const files = req.files;
+  const projectRootPath = path.resolve('./');
   let data = req.body;
 
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
+  data = {
+    user_id: logged_user?.id,
+    business_id: logged_user?.business_id,
+    ...data,
+  };
 
   const { error } = productValidation(data);
   if (error)
@@ -100,6 +117,39 @@ const createProduct = async (req, res) => {
       message: error.details[0].message,
     });
 
+  // image upload
+  let fileNames = '';
+  let filePaths = '';
+  if (files) {
+    Object.keys(files).forEach((key) => {
+      let ext = '.' + files[key].mimetype.split('/')[1];
+      let md5 = files[key].md5;
+      let filename = md5 + ext;
+
+      // store the file
+      const filepath = path.join(projectRootPath, 'uploads', filename);
+      files[key].mv(filepath, (err) => {
+        if (err)
+          return res.status(500).json({
+            status: 'error',
+            message: err,
+          });
+      });
+
+      fileNames += filename + ' ';
+      filePaths += filepath + ' ';
+    });
+
+    // :TODO Add Schema for Product Images
+
+    data = {
+      image: fileNames.trim(),
+      image_url: filePaths.trim(),
+      ...data,
+    };
+  }
+
+  // // image upload / end
   try {
     let new_record = await Product.create(data);
     let status = new_record ? 'Success' : 'Error';
@@ -137,7 +187,11 @@ const updateProduct = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
+  data = {
+    user_id: logged_user?.id,
+    business_id: logged_user?.business_id,
+    ...data,
+  };
 
   const { error } = productValidation(data);
   if (error)
@@ -146,7 +200,7 @@ const updateProduct = async (req, res) => {
       message: error.details[0].message,
     });
 
-    console.log(data);
+  console.log(data);
   let patching_data = {
     product_category_id: data?.product_category_id,
     vehicle_make_id: data?.vehicle_make_id,
@@ -164,14 +218,16 @@ const updateProduct = async (req, res) => {
     body_type: data?.body_type,
     active: data?.active,
     user_id: data?.user_id,
-  }
+  };
   let patched_record = await Product.update(patching_data, {
     where: { id: id },
   });
   let status = patched_record ? 'Success' : 'Error';
   // patched_record = await Product.findByPk(id);
   patched_record = await Product.findAndCountAll({
-    where: {id: id}, limit, offset,
+    where: { id: id },
+    limit,
+    offset,
     include: ['user', 'make', 'product_category', 'model'],
   });
   let response = getPagingData(patched_record, page, limit);
