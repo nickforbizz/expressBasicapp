@@ -84,7 +84,7 @@ module.exports = (sequelize, Sequelize) => {
       image_url: {
         type: Sequelize.STRING,
       },
-      active: {
+      active: { 
         type: Sequelize.INTEGER,
         default: 0
       },
