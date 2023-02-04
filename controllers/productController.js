@@ -98,6 +98,7 @@ const getStockedProducts = async (req, res) => {
  */
 const createProduct = async (req, res) => {
   const files = req.files;
+  // const files = req.body.files;
   const projectRootPath = path.resolve('./');
   let data = req.body;
 
@@ -120,6 +121,10 @@ const createProduct = async (req, res) => {
   // image upload
   let fileNames = '';
   let filePaths = '';
+  console.log({files});
+  console.log(req.files);
+  console.log(req.body.files);
+  
   if (files) {
     Object.keys(files).forEach((key) => {
       let ext = '.' + files[key].mimetype.split('/')[1];
@@ -128,6 +133,7 @@ const createProduct = async (req, res) => {
 
       // store the file
       const filepath = path.join(projectRootPath, 'uploads', filename);
+      console.log({filepath});
       files[key].mv(filepath, (err) => {
         if (err)
           return res.status(500).json({
@@ -148,7 +154,7 @@ const createProduct = async (req, res) => {
       ...data,
     };
   }
-
+  // return res.status(400).json("here");
   // // image upload / end
   try {
     let new_record = await Product.create(data);
