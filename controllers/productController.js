@@ -97,8 +97,7 @@ const getStockedProducts = async (req, res) => {
  * @param {*} res
  */
 const createProduct = async (req, res) => {
-  const files = req.files;
-  // const files = req.body.files;
+  const files = req?.files;
   const projectRootPath = path.resolve('./');
   let data = req.body;
 
@@ -118,12 +117,9 @@ const createProduct = async (req, res) => {
       message: error.details[0].message,
     });
 
-  // image upload
+  // image upload 
   let fileNames = '';
   let filePaths = '';
-  console.log({files});
-  console.log(req.files);
-  console.log(req.body.files);
   
   if (files) {
     Object.keys(files).forEach((key) => {
@@ -154,7 +150,7 @@ const createProduct = async (req, res) => {
       ...data,
     };
   }
-  // return res.status(400).json("here");
+  // return res.status(400).json(data);
   // // image upload / end
   try {
     let new_record = await Product.create(data);
@@ -180,6 +176,8 @@ const createProduct = async (req, res) => {
  * @param {*} res
  */
 const updateProduct = async (req, res) => {
+  const files = req?.files;
+  const projectRootPath = path.resolve('./');
   const { page, size } = req.query;
   const { limit, offset } = getPagination(page, size);
   let data = req.body;
@@ -192,12 +190,19 @@ const updateProduct = async (req, res) => {
 
   // Add User Association
   var user_email = req?.user?.email;
-  const logged_user = await loggedUser(user_email);
+  const logged_user = await loggedUser(user_email);  
   data = {
     user_id: logged_user?.id,
     business_id: logged_user?.business_id,
     ...data,
   };
+
+  Object.keys(data).map( (key, index) => {
+    if (data[key] == 'null') {
+      data[key] = null;
+    }
+    return data[key]
+  });
 
   const { error } = productValidation(data);
   if (error)
@@ -206,14 +211,15 @@ const updateProduct = async (req, res) => {
       message: error.details[0].message,
     });
 
-  console.log(data);
+    
+  // console.log(data);
   let patching_data = {
     product_category_id: data?.product_category_id,
     vehicle_make_id: data?.vehicle_make_id,
     vehicle_model_id: data?.vehicle_model_id,
     title: data?.title,
     description: data?.description,
-    quantity: data?.quantity,
+    quantity: data?.quantity ,
     size: data?.size,
     color: data?.color,
     discount: data?.discount,
@@ -225,6 +231,44 @@ const updateProduct = async (req, res) => {
     active: data?.active,
     user_id: data?.user_id,
   };
+
+  // image upload 
+  let fileNames = '';
+  let filePaths = '';
+  
+  if (files) {
+    Object.keys(files).forEach((key) => {
+      let ext = '.' + files[key].mimetype.split('/')[1];
+      let md5 = files[key].md5;
+      let filename = md5 + ext;
+
+      // store the file
+      const filepath = path.join(projectRootPath, 'uploads', filename);
+      files[key].mv(filepath, (err) => {
+        if (err)
+          return res.status(500).json({
+            status: 'error',
+            message: err,
+          });
+      });
+
+      fileNames += filename + ' ';
+      filePaths += filepath + ' ';
+    });
+
+    // :TODO Add Schema for Product Images
+
+    patching_data = {
+      image: fileNames.trim(),
+      image_url: filePaths.trim(),
+      ...patching_data,
+    };
+  }
+  // return res.status(400).json(data);
+  // // image upload / end
+
+  console.log(patching_data);
+  console.log(id);
   let patched_record = await Product.update(patching_data, {
     where: { id: id },
   });
