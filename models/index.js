@@ -27,6 +27,7 @@ db.VehicleMake = require('./VehicleMake')(sequelize, Sequelize);
 db.VehicleModel = require('./VehicleModel')(sequelize, Sequelize);
 db.Product = require('./Product')(sequelize, Sequelize);
 db.SoldProduct = require('./SoldProduct')(sequelize, Sequelize);
+db.ProductImages = require('./ProductImages')(sequelize, Sequelize);
 db.Post = require('./Post')(sequelize, Sequelize);
 
 // Relationships
@@ -101,6 +102,18 @@ db.SoldProduct.belongsTo(db.User, {
 });
 
 db.SoldProduct.belongsTo(db.Product, {
+  foreignKey: 'product_id',
+  as: 'product',
+});
+
+// ProductImages
+db.User.hasMany(db.ProductImages, { as: 'images' });
+db.ProductImages.belongsTo(db.User, {
+  foreignKey: 'UserId',
+  as: 'user',
+});
+
+db.ProductImages.belongsTo(db.Product, {
   foreignKey: 'product_id',
   as: 'product',
 });

@@ -6,6 +6,7 @@ const Models = require('../models');
 const { Op } = require('sequelize');
 const { getPagination, getPagingData } = require('../helpers/Pagination');
 const BusinessQuery = require('../helpers/businessQuery');
+const { ProductImages } = require('../models');
 const Product = Models.Product;
 
 /**
@@ -156,6 +157,9 @@ const createProduct = async (req, res) => {
     let new_record = await Product.create(data);
     let status = new_record ? 'Success' : 'Error';
 
+
+    // create records for images
+
     return res.send({
       status: status,
       data: new_record,
@@ -237,7 +241,7 @@ const updateProduct = async (req, res) => {
   let filePaths = '';
   
   if (files) {
-    Object.keys(files).forEach((key) => {
+    Object.keys(files).forEach(async (key) => {
       let ext = '.' + files[key].mimetype.split('/')[1];
       let md5 = files[key].md5;
       let filename = md5 + ext;
@@ -254,9 +258,23 @@ const updateProduct = async (req, res) => {
 
       fileNames += filename + ' ';
       filePaths += filepath + ' ';
+
+
+      // :TODO Add Schema for Product Images
+      await ProductImages.destroy({
+        where: { product_id: id },
+      });
+      let image_data = {
+        product_id: id,
+        name: filename,
+        name: filename,
+        url: filepath,
+        user_id: data?.user_id,
+      }
+
+      await ProductImages.create(image_data);
     });
 
-    // :TODO Add Schema for Product Images
 
     patching_data = {
       image: fileNames.trim(),
