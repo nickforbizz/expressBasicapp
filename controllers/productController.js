@@ -98,6 +98,7 @@ const getStockedProducts = async (req, res) => {
  * @param {*} res
  */
 const createProduct = async (req, res) => {
+  const { page, size, title } = req.query;
   const files = req?.files;
   const projectRootPath = path.resolve('./');
   let data = req.body;
@@ -105,6 +106,7 @@ const createProduct = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
+  let bs_query = await BusinessQuery(logged_user.id);
   data = {
     user_id: logged_user?.id,
     business_id: logged_user?.business_id,
@@ -122,35 +124,7 @@ const createProduct = async (req, res) => {
   let fileNames = '';
   let filePaths = '';
   
-  if (files) {
-    Object.keys(files).forEach((key) => {
-      let ext = '.' + files[key].mimetype.split('/')[1];
-      let md5 = files[key].md5;
-      let filename = md5 + ext;
-
-      // store the file
-      const filepath = path.join(projectRootPath, 'uploads', filename);
-      console.log({filepath});
-      files[key].mv(filepath, (err) => {
-        if (err)
-          return res.status(500).json({
-            status: 'error',
-            message: err,
-          });
-      });
-
-      fileNames += filename + ' ';
-      filePaths += filepath + ' ';
-    });
-
-    // :TODO Add Schema for Product Images
-
-    data = {
-      image: fileNames.trim(),
-      image_url: filePaths.trim(),
-      ...data,
-    };
-  }
+  
   // return res.status(400).json(data);
   // // image upload / end
   try {
@@ -159,10 +133,56 @@ const createProduct = async (req, res) => {
 
 
     // create records for images
+    if (files) {
+      Object.keys(files).forEach(async (key) => {
+        let ext = '.' + files[key].mimetype.split('/')[1];
+        let md5 = files[key].md5;
+        let filename = md5 + ext;
+  
+        // store the file
+        const filepath = path.join(projectRootPath, 'uploads', filename);
+        files[key].mv(filepath, (err) => {
+          if (err)
+            return res.status(500).json({
+              status: 'error',
+              message: err,
+            });
+        });
+  
+        fileNames += filename + ' ';
+        filePaths += filepath + ' ';
+
+        
+        await saveProductImgs(new_record?.id, filename, filepath, data);
+      });
+  
+      // Add Schema for Product Images
+      data = {
+        image: fileNames.trim(),
+        image_url: filePaths.trim(),
+        ...data,
+      };
+    }
+
+     await Product.update(data, {
+      where: { id: new_record?.id },
+    });
+
+  const { limit, offset } = getPagination(page, size);
+  var condition = {is_sold: 0, ...bs_query };
+  let records = await Product.findAndCountAll({
+    where: condition,
+    limit,
+    offset,
+    include: ['user', 'make', 'product_category', 'model'],
+  });
+
+  let response = getPagingData(records, page, limit);
+
 
     return res.send({
       status: status,
-      data: new_record,
+      data: response,
       message: status + ' creating record',
     });
   } catch (error) {
@@ -261,18 +281,7 @@ const updateProduct = async (req, res) => {
 
 
       // :TODO Add Schema for Product Images
-      await ProductImages.destroy({
-        where: { product_id: id },
-      });
-      let image_data = {
-        product_id: id,
-        name: filename,
-        name: filename,
-        url: filepath,
-        user_id: data?.user_id,
-      }
-
-      await ProductImages.create(image_data);
+      await saveProductImgs(id, filename, filepath, data);
     });
 
 
@@ -328,6 +337,27 @@ const deleteProduct = async (req, res) => {
   });
 };
 
+
+
+async function saveProductImgs(id, filename, filepath, data) {
+
+  if (!id) {
+    return 1;
+  };
+  await ProductImages.destroy({
+    where: { product_id: id },
+  });
+  let image_data = {
+    product_id: id,
+    name: filename,
+    url: filepath,
+    user_id: data?.user_id,
+  };
+
+  await ProductImages.create(image_data);
+  return 0;
+}
+
 module.exports = {
   getProducts,
   getAllProducts,
@@ -336,3 +366,5 @@ module.exports = {
   createProduct,
   deleteProduct,
 };
+
+

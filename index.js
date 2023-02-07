@@ -27,7 +27,8 @@ const settingsRoutes = require('./routes/settings');
 
 // Connect to DB
 const db = require("./models");
-db.sequelize.sync({ force: false })
+db.sequelize.sync() // creates new tables added
+// db.sequelize.sync({ force: false }) // nothing happens to your db
   .then(() => {
     console.log("Synced db.");
   })
