@@ -17,11 +17,13 @@ const getSoldProducts = async (req, res) => {
   const logged_user = await loggedUser(user_email);
   let bs_query = await BusinessQuery(logged_user.id);
 
-  var condition =  { active: 1, ...bs_query };
+  var condition = { active: 1, ...bs_query };
   const { limit, offset } = getPagination(page, size);
 
   let records = await SoldProduct.findAndCountAll({
-    where: condition, limit, offset,
+    where: condition,
+    limit,
+    offset,
     include: ['user', 'product'],
   });
   let response = getPagingData(records, page, limit);
@@ -35,15 +37,20 @@ const getSoldProducts = async (req, res) => {
  */
 const getAllSoldProducts = async (req, res) => {
   const { page, size } = req.query;
-  
+
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
   let bs_query = await BusinessQuery(logged_user.id);
-  
-  var condition =  { ...bs_query };
+
+  var condition = { ...bs_query };
   const { limit, offset } = getPagination(page, size);
-  let records = await SoldProduct.findAndCountAll({ where: condition, limit, offset, include: ['user', 'product'] });
-  console.log("records");
+  let records = await SoldProduct.findAndCountAll({
+    where: condition,
+    limit,
+    offset,
+    include: ['user', 'product'],
+  });
+  console.log('records');
   console.log(records);
   let response = getPagingData(records, page, limit);
   res.send(response);
@@ -55,12 +62,18 @@ const getAllSoldProducts = async (req, res) => {
  * @param {*} res
  */
 const createSoldProduct = async (req, res) => {
+  const { page, size } = req.query;
   let data = req.body;
 
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
+  let bs_query = await BusinessQuery(logged_user.id);
+  data = {
+    user_id: logged_user?.id,
+    business_id: logged_user?.business_id,
+    ...data,
+  };
 
   const { error } = soldProductValidation(data);
   if (error)
@@ -74,13 +87,27 @@ const createSoldProduct = async (req, res) => {
     let status = new_record ? 'Success' : 'Error';
 
     // update Product as sold
-    await Product.update({is_sold:1}, {
-      where: { id: new_record.product_id },
-    })
+    await Product.update(
+      { is_sold: 1 },
+      {
+        where: { id: new_record.product_id },
+      }
+    );
+
+    var condition = { active: 1, ...bs_query };
+    const { limit, offset } = getPagination(page, size);
+
+    let records = await SoldProduct.findAndCountAll({
+      where: condition,
+      limit,
+      offset,
+      include: ['user', 'product'],
+    });
+    let response = getPagingData(records, page, limit);
 
     return res.send({
       status: status,
-      data: new_record,
+      data: response,
       message: status + ' creating record',
     });
   } catch (error) {
@@ -111,7 +138,11 @@ const updateSoldProduct = async (req, res) => {
   // Add User Association
   var user_email = req?.user?.email;
   const logged_user = await loggedUser(user_email);
-  data = { user_id: logged_user?.id, business_id: logged_user?.business_id, ...data };
+  data = {
+    user_id: logged_user?.id,
+    business_id: logged_user?.business_id,
+    ...data,
+  };
 
   const { error } = soldProductValidation(data);
   if (error)
@@ -126,7 +157,9 @@ const updateSoldProduct = async (req, res) => {
   let status = patched_record ? 'Success' : 'Error';
   // patched_record = await SoldProduct.findByPk(id);
   patched_record = await SoldProduct.findAndCountAll({
-    where: {id: id}, limit, offset,
+    where: { id: id },
+    limit,
+    offset,
     include: ['user', 'product'],
   });
   let response = getPagingData(patched_record, page, limit);
