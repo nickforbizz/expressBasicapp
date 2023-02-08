@@ -58,7 +58,7 @@ module.exports = (sequelize, Sequelize) => {
       },
       is_sold: {
         type: Sequelize.BOOLEAN,
-        default: false,
+        default: 0,
       },
       price: {
         type: Sequelize.INTEGER,

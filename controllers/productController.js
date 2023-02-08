@@ -22,8 +22,8 @@ const getProducts = async (req, res) => {
   let bs_query = await BusinessQuery(logged_user.id);
 
   var condition = title
-    ? { title: { [Op.like]: `%${title}%` }, active: 1, ...bs_query }
-    : { active: 1, ...bs_query };
+    ? { title: { [Op.like]: `%${title}%` }, active: 1, is_sold: 0, ...bs_query }
+    : { active: 1,is_sold: 0, ...bs_query };
   const { limit, offset } = getPagination(page, size);
 
   let records = await Product.findAndCountAll({
@@ -49,8 +49,8 @@ const getAllProducts = async (req, res) => {
   let bs_query = await BusinessQuery(logged_user.id);
 
   var condition = title
-    ? { title: { [Op.like]: `%${title}%` }, ...bs_query }
-    : bs_query;
+    ? { title: { [Op.like]: `%${title}%` }, is_sold: 1, ...bs_query }
+    : { is_sold: 0, ...bs_query};
   const { limit, offset } = getPagination(page, size);
 
   let records = await Product.findAndCountAll({
@@ -294,8 +294,6 @@ const updateProduct = async (req, res) => {
   // return res.status(400).json(data);
   // // image upload / end
 
-  console.log(patching_data);
-  console.log(id);
   let patched_record = await Product.update(patching_data, {
     where: { id: id },
   });
