@@ -38,7 +38,7 @@ const getProducts = async (req, res) => {
 
 /**
  * Fetch All Product Records
- * @param {*} req
+ * @param {*} req 
  * @param {*} res
  */
 const getAllProducts = async (req, res) => {
@@ -299,6 +299,8 @@ const updateProduct = async (req, res) => {
   });
   let status = patched_record ? 'Success' : 'Error';
   // patched_record = await Product.findByPk(id);
+
+  
   patched_record = await Product.findAndCountAll({
     where: { id: id },
     limit,
@@ -322,15 +324,33 @@ const updateProduct = async (req, res) => {
  */
 const deleteProduct = async (req, res) => {
   let id = req.params.id;
+  const { page, size } = req.query;
+  const { limit, offset } = getPagination(page, size);
+  var user_email = req?.user?.email;
+  const logged_user = await loggedUser(user_email);  
+  let bs_query = await BusinessQuery(logged_user.id);
 
+  // Delete Images
+  await ProductImages.destroy({
+    where: { product_id: id },
+  });
   // Delete the document by its _id
   let del_record = await Product.destroy({
     where: { id: id },
   });
   let status = del_record ? 'Success' : 'Error';
+  let condition = { active: 1,is_sold: 0, ...bs_query }
+  patched_record = await Product.findAndCountAll({
+    where: condition,
+    limit,
+    offset,
+    include: ['user', 'make', 'product_category', 'model'],
+  });
+  let response = getPagingData(patched_record, page, limit);
 
   return res.send({
     status: status,
+    data: response,
     message: status + ' deleting record',
   });
 };
